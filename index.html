@@ -7,6 +7,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <title>NVS Mobile Ward - Sistema Reparto e HACCP</title>
     
+    <!-- Fix 404 Favicon Error -->
+    <link rel="icon" href="data:,">
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -113,6 +116,9 @@
         .toast { background: var(--text-main); color: #fff; padding: 14px 24px; border-radius: 8px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-size: 1.1em;}
         .toast.show { opacity: 1; }
         .alerts-container-scroll { max-height: 400px; overflow-y: auto; padding-right: 10px; }
+        .alerts-container-scroll::-webkit-scrollbar { width: 8px; }
+        .alerts-container-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .alerts-container-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .guest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; margin-top: 15px; }
         .guest-card { background: #ffffff; border: 1px solid var(--border-color); padding: 12px; border-radius: var(--radius); display: flex; flex-direction: column; gap: 8px; border-left: 4px solid var(--secondary-color);}
         .guest-card-top { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
@@ -317,66 +323,7 @@
                 </div>
             </div>
 
-            <!-- CONSENSI E PRIVACY -->
-            <div id="ws-consensi" class="workspace">
-                <div class="card" style="border-top: 5px solid #4f46e5;">
-                    <div class="card-header"><h3 style="color:#4f46e5;">📝 Modulistica: Consensi e Privacy</h3></div>
-                    <div class="form-group"><label>Seleziona Ospite</label><select id="consensiGuestSelect" onchange="window.selectPatientGlobal(this.value)" style="font-weight:bold; border-color:#4f46e5;"><option value="" disabled selected>Nessun ospite selezionato</option></select></div>
-                    <div id="consensiArea" style="display:none; margin-top:20px;">
-                        <div style="display:flex; gap:20px; flex-wrap:wrap; background:#f8fafc; padding:20px; border:2px solid #cbd5e1; border-radius:10px;">
-                            <div style="flex:2; display:flex; flex-direction:column; gap:12px; min-width:280px;">
-                                <h4 style="margin:0 0 10px 0; color:var(--text-main); font-size:1.1em; border-bottom:1px solid #cbd5e1; padding-bottom:5px;">Spunte di Accettazione Legale</h4>
-                                <label class="check-item" style="cursor:pointer;"><input type="checkbox" id="consPrivacy"> <span><strong>GDPR Privacy:</strong> Acconsento al trattamento dei dati sanitari e personali.</span></label>
-                                <label class="check-item" style="cursor:pointer;"><input type="checkbox" id="consInfo"> <span><strong>Consenso Informato:</strong> Accetto le prestazioni e le cure proposte (L. 219/2017).</span></label>
-                                <label class="check-item" style="cursor:pointer;"><input type="checkbox" id="consFoto"> <span><strong>Immagini:</strong> Autorizzo l'uso di foto per documentazione interna.</span></label>
-                                <label class="check-item" style="cursor:pointer;"><input type="checkbox" id="consReg"> <span><strong>Regolamento:</strong> Dichiaro di aver ricevuto copia del regolamento interno.</span></label>
-                            </div>
-                            <div style="flex:1.5; background:#f0fdf4; border:2px solid #bbf7d0; padding:20px; border-radius:10px; text-align:center; min-width:280px; display:flex; flex-direction:column; align-items:center;">
-                                <strong style="color:var(--success-color); font-size:1.1em;">Firma Elettronica Autografa</strong>
-                                <p style="color:var(--text-light); font-size:0.9em; margin-bottom:15px;">Il documento assumerà valore legale al momento del salvataggio.</p>
-                                <div class="form-group" style="width:100%; text-align:left;"><label>Nome e Cognome del Firmatario</label><input type="text" id="nomeFirmatarioModulo" placeholder="Es. Rossi Mario (Familiare / AdS)" style="border-color:#bbf7d0;"></div>
-                                <div id="moduloSignaturePreview" style="height:100px; width:100%; background:#fff; border:1px dashed #94a3b8; border-radius:6px; display:flex; align-items:center; justify-content:center; margin-bottom:10px; overflow:hidden;"><span style="color:#94a3b8; font-size:0.9em;">Nessuna firma acquisita</span></div>
-                                <div id="moduloFirmaMeta" style="font-size:0.85em; color:var(--text-light); margin-bottom:15px; font-weight:bold; height:15px;"></div>
-                                <button id="btnAvviaFirmaModulo" class="btn-success" onclick="window.avviaFirmaConsensi()" style="width:100%; margin-bottom:10px;">✍️ Apri Pad di Firma</button>
-                                <div style="display:flex; gap:10px; width:100%;"><button class="btn-primary" style="flex:1; background:#4f46e5;" onclick="window.salvaConsensi()">💾 Salva Dati</button><button class="btn-doc" style="flex:1;" onclick="window.stampaConsensi()">🖨️ Stampa PDF</button></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- DIARI E NOTE -->
-            <div id="ws-diari" class="workspace">
-                <div class="card"><div class="form-group"><label>Seleziona Ospite per Diari</label><select id="diariGuestSelect" onchange="window.handlePatientSelect('diariGuestSelect')" style="font-weight:bold; border-color:#8b5cf6;"><option value="" disabled selected>Nessun ospite selezionato</option></select></div></div>
-                <div id="diariContent" style="display:none;">
-                    <div class="clinical-header" id="diariHeader"></div>
-                    <div style="display:flex; gap:20px; flex-wrap:wrap;">
-                        <div style="flex:1; min-width:320px;">
-                            <div class="card req-medico" style="border-top: 5px solid #16a34a; margin-bottom: 15px;">
-                                <div class="card-header"><h3 style="color:#16a34a;">👨‍⚕️ Gestione Medica</h3></div>
-                                <button class="btn-success" style="width:100%; font-size:1.2em; padding:15px; background: linear-gradient(135deg, #16a34a, #15803d); box-shadow: 0 4px 10px rgba(22, 163, 74, 0.25);" onclick="window.toggleDiario('medico', true)">➕ Nuova Nota Medica</button>
-                                <div id="box-nota-medica" style="display:none; background:#f0fdf4; padding:20px; border-radius:10px; border:2px solid #bbf7d0; margin-top: 15px; animation: fadeIn 0.3s ease;">
-                                    <textarea id="notaMedicaText" rows="5" placeholder="Esame obiettivo, prescrizioni aggiuntive..." style="width:100%;"></textarea>
-                                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:15px;"><button class="btn-doc" onclick="window.toggleDiario('medico')">❌ Annulla</button><button class="btn-success" onclick="window.addDiarioWithSignature('Medico')">✍️ Registra (Firma)</button></div>
-                                </div>
-                            </div>
-                            <div class="card" style="border-color:#bbf7d0;"><div class="card-header"><h3 style="color:#15803d;">Storico Note Mediche</h3></div><div id="diariMediciList" style="display:flex; flex-direction:column; gap:12px;"></div></div>
-                        </div>
-                        <div style="flex:1; min-width:320px;">
-                            <div class="card req-infermiere" style="border-top: 5px solid #0284c7; margin-bottom: 15px;">
-                                <div class="card-header"><h3 style="color:#0284c7;">💉 Gestione Infermieristica</h3></div>
-                                <button class="btn-primary" style="width:100%; font-size:1.2em; padding:15px; background: linear-gradient(135deg, #0284c7, #0369a1); box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);" onclick="window.toggleDiario('infermiere', true)">➕ Nuova Nota Inf.</button>
-                                <div id="box-nota-infermiere" style="display:none; background:#f0f9ff; padding:20px; border-radius:10px; border:2px solid #bae6fd; margin-top: 15px; animation: fadeIn 0.3s ease;">
-                                    <textarea id="notaInfText" rows="5" placeholder="Osservazioni infermieristiche, decorso..." style="width:100%;"></textarea>
-                                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:15px;"><button class="btn-doc" onclick="window.toggleDiario('infermiere')">❌ Annulla</button><button class="btn-primary" style="background:#0284c7;" onclick="window.addDiarioWithSignature('Infermiere')">✍️ Registra (Firma)</button></div>
-                                </div>
-                            </div>
-                            <div class="card" style="border-color:#bae6fd;"><div class="card-header"><h3 style="color:#0369a1;">Storico Note Inf.</h3></div><div id="diariInfList" style="display:flex; flex-direction:column; gap:12px;"></div></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+            <!-- CARTELLA CLINICA E BINA -->
             <div id="ws-clinica" class="workspace">
                 <div class="card"><div class="form-group"><label>Seleziona Fascicolo Ospite</label><select id="clinicalGuestSelect" onchange="window.handlePatientSelect('clinicalGuestSelect')" style="font-weight:bold; border-color:var(--primary-color);"><option value="" disabled selected>Nessun ospite selezionato</option></select></div></div>
                 <div id="clinicalContent" style="display:none;">
@@ -444,6 +391,7 @@
                     
                     <div class="card"><div class="card-header"><h3>Check-in clinico e Mappatura Lesioni</h3></div><div class="form-group"><label>Condizioni Generali all'Arrivo</label><textarea id="chkGen" class="restrict-oss-input" rows="3"></textarea></div><div class="form-group"><label>Piaghe/Lesioni Attive</label><textarea id="chkPiaghe" class="restrict-oss-input" rows="3"></textarea></div><div class="form-group restrict-oss"><label>Mappa Anatomica (Tocca per segnare)</label><div id="bodyMapWrapper" style="position:relative; width: 100%; max-width: 300px; margin: 10px 0; border: 2px solid var(--border-color); background: #fff; border-radius:6px;" onclick="window.handleBodyMapClick(event)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 250" id="bodyMapSvg" style="width:100%; height:auto; display:block; cursor:crosshair; pointer-events:none;"><g transform="translate(40, 30)"><text x="35" y="-10" text-anchor="middle" font-size="12" font-weight="bold" fill="#64748b">FRONTE</text><circle cx="35" cy="15" r="18" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="10" y="38" width="50" height="75" rx="4" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="-8" y="42" width="12" height="65" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1" transform="rotate(10, -2, 42)"/><rect x="66" y="42" width="12" height="65" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1" transform="rotate(-10, 72, 42)"/><rect x="14" y="118" width="18" height="80" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="38" y="118" width="18" height="80" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/></g><g transform="translate(190, 30)"><text x="35" y="-10" text-anchor="middle" font-size="12" font-weight="bold" fill="#64748b">RETRO</text><circle cx="35" cy="15" r="18" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="10" y="38" width="50" height="75" rx="4" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="-8" y="42" width="12" height="65" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1" transform="rotate(10, -2, 42)"/><rect x="66" y="42" width="12" height="65" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1" transform="rotate(-10, 72, 42)"/><rect x="14" y="118" width="18" height="80" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/><rect x="38" y="118" width="18" height="80" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/></g></svg><div id="bodyMarkersLayer" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div></div><button class="btn-doc" onclick="window.clearBodyMarkers()">Cancella Punti</button></div><div class="restrict-oss" style="display:flex; gap:10px; margin-top:15px;"><button class="btn-success" onclick="window.saveClinicalDataWithSignature('Check-in e Lesioni')">✍️ Salva Check-in (Firma)</button></div></div>
 
+                    <!-- MODULO DISPOSITIVI MEDICI -->
                     <div class="card req-infermiere" style="border-top: 5px solid #8b5cf6;">
                         <div class="card-header"><h3 style="color:#8b5cf6;">🩺 Dispositivi Medici (C.V., PEG, SNG...)</h3></div>
                         <div style="display:flex; gap:15px; flex-wrap:wrap; background:#f5f3ff; padding:20px; border:2px solid #ede9fe; border-radius:10px; margin-bottom:20px;">
@@ -509,6 +457,67 @@
                 </div>
             </div>
 
+            <!-- CONSENSI E PRIVACY -->
+            <div id="ws-consensi" class="workspace">
+                <div class="card" style="border-top: 5px solid #4f46e5;">
+                    <div class="card-header"><h3 style="color:#4f46e5;">📝 Modulistica: Consensi e Privacy</h3></div>
+                    <div class="form-group"><label>Seleziona Ospite</label><select id="consensiGuestSelect" onchange="window.selectPatientGlobal(this.value)" style="font-weight:bold; border-color:#4f46e5;"><option value="" disabled selected>Nessun ospite selezionato</option></select></div>
+                    <div id="consensiArea" style="display:none; margin-top:20px;">
+                        <div style="display:flex; gap:20px; flex-wrap:wrap; background:#f8fafc; padding:20px; border:2px solid #cbd5e1; border-radius:10px;">
+                            <div style="flex:2; display:flex; flex-direction:column; gap:12px; min-width:280px;">
+                                <h4 style="margin:0 0 10px 0; color:var(--text-main); font-size:1.1em; border-bottom:1px solid #cbd5e1; padding-bottom:5px;">Spunte di Accettazione Legale</h4>
+                                <label class="check-item" style="cursor:pointer;"><input type="checkbox" id="consPrivacy"> <span><strong>GDPR Privacy:</strong> Acconsento al trattamento dei dati sanitari e personali.</span></label>
+                                <label class="check-item" style="cursor:pointer;"><input type="checkbox" id="consInfo"> <span><strong>Consenso Informato:</strong> Accetto le prestazioni e le cure proposte (L. 219/2017).</span></label>
+                                <label class="check-item" style="cursor:pointer;"><input type="checkbox" id="consFoto"> <span><strong>Immagini:</strong> Autorizzo l'uso di foto per documentazione interna.</span></label>
+                                <label class="check-item" style="cursor:pointer;"><input type="checkbox" id="consReg"> <span><strong>Regolamento:</strong> Dichiaro di aver ricevuto copia del regolamento interno.</span></label>
+                            </div>
+                            <div style="flex:1.5; background:#f0fdf4; border:2px solid #bbf7d0; padding:20px; border-radius:10px; text-align:center; min-width:280px; display:flex; flex-direction:column; align-items:center;">
+                                <strong style="color:var(--success-color); font-size:1.1em;">Firma Elettronica Autografa</strong>
+                                <p style="color:var(--text-light); font-size:0.9em; margin-bottom:15px;">Il documento assumerà valore legale al momento del salvataggio.</p>
+                                <div class="form-group" style="width:100%; text-align:left;"><label>Nome e Cognome del Firmatario</label><input type="text" id="nomeFirmatarioModulo" placeholder="Es. Rossi Mario (Familiare / AdS)" style="border-color:#bbf7d0;"></div>
+                                <div id="moduloSignaturePreview" style="height:100px; width:100%; background:#fff; border:1px dashed #94a3b8; border-radius:6px; display:flex; align-items:center; justify-content:center; margin-bottom:10px; overflow:hidden;"><span style="color:#94a3b8; font-size:0.9em;">Nessuna firma acquisita</span></div>
+                                <div id="moduloFirmaMeta" style="font-size:0.85em; color:var(--text-light); margin-bottom:15px; font-weight:bold; height:15px;"></div>
+                                <button id="btnAvviaFirmaModulo" class="btn-success" onclick="window.avviaFirmaConsensi()" style="width:100%; margin-bottom:10px;">✍️ Apri Pad di Firma</button>
+                                <div style="display:flex; gap:10px; width:100%;"><button class="btn-primary" style="flex:1; background:#4f46e5;" onclick="window.salvaConsensi()">💾 Salva Dati</button><button class="btn-doc" style="flex:1;" onclick="window.stampaConsensi()">🖨️ Stampa PDF</button></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DIARI E NOTE -->
+            <div id="ws-diari" class="workspace">
+                <div class="card"><div class="form-group"><label>Seleziona Ospite per Diari</label><select id="diariGuestSelect" onchange="window.handlePatientSelect('diariGuestSelect')" style="font-weight:bold; border-color:#8b5cf6;"><option value="" disabled selected>Nessun ospite selezionato</option></select></div></div>
+                <div id="diariContent" style="display:none;">
+                    <div class="clinical-header" id="diariHeader"></div>
+                    <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                        <div style="flex:1; min-width:320px;">
+                            <div class="card req-medico" style="border-top: 5px solid #16a34a; margin-bottom: 15px;">
+                                <div class="card-header"><h3 style="color:#16a34a;">👨‍⚕️ Gestione Medica</h3></div>
+                                <button class="btn-success" style="width:100%; font-size:1.2em; padding:15px; background: linear-gradient(135deg, #16a34a, #15803d); box-shadow: 0 4px 10px rgba(22, 163, 74, 0.25);" onclick="window.toggleDiario('medico', true)">➕ Nuova Nota Medica</button>
+                                <div id="box-nota-medica" style="display:none; background:#f0fdf4; padding:20px; border-radius:10px; border:2px solid #bbf7d0; margin-top: 15px; animation: fadeIn 0.3s ease;">
+                                    <textarea id="notaMedicaText" rows="5" placeholder="Esame obiettivo, prescrizioni aggiuntive..." style="width:100%;"></textarea>
+                                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:15px;"><button class="btn-doc" onclick="window.toggleDiario('medico')">❌ Annulla</button><button class="btn-success" onclick="window.addDiarioWithSignature('Medico')">✍️ Registra (Firma)</button></div>
+                                </div>
+                            </div>
+                            <div class="card" style="border-color:#bbf7d0;"><div class="card-header"><h3 style="color:#15803d;">Storico Note Mediche</h3></div><div id="diariMediciList" style="display:flex; flex-direction:column; gap:12px;"></div></div>
+                        </div>
+                        <div style="flex:1; min-width:320px;">
+                            <div class="card req-infermiere" style="border-top: 5px solid #0284c7; margin-bottom: 15px;">
+                                <div class="card-header"><h3 style="color:#0284c7;">💉 Gestione Infermieristica</h3></div>
+                                <button class="btn-primary" style="width:100%; font-size:1.2em; padding:15px; background: linear-gradient(135deg, #0284c7, #0369a1); box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);" onclick="window.toggleDiario('infermiere', true)">➕ Nuova Nota Inf.</button>
+                                <div id="box-nota-infermiere" style="display:none; background:#f0f9ff; padding:20px; border-radius:10px; border:2px solid #bae6fd; margin-top: 15px; animation: fadeIn 0.3s ease;">
+                                    <textarea id="notaInfText" rows="5" placeholder="Osservazioni infermieristiche, decorso..." style="width:100%;"></textarea>
+                                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:15px;"><button class="btn-doc" onclick="window.toggleDiario('infermiere')">❌ Annulla</button><button class="btn-primary" style="background:#0284c7;" onclick="window.addDiarioWithSignature('Infermiere')">✍️ Registra (Firma)</button></div>
+                                </div>
+                            </div>
+                            <div class="card" style="border-color:#bae6fd;"><div class="card-header"><h3 style="color:#0369a1;">Storico Note Inf.</h3></div><div id="diariInfList" style="display:flex; flex-direction:column; gap:12px;"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TERAPIA E STUPEFACENTI -->
             <div id="ws-terapia" class="workspace">
                 <div class="card"><div class="form-group"><label>Seleziona Ospite per Prospetto Terapia</label><select id="terapiaGuestSelect" onchange="window.handlePatientSelect('terapiaGuestSelect')" style="font-weight:bold; border-color:var(--terapia-color);"><option value="" disabled selected>Tocca per scegliere un ospite...</option></select></div></div>
                 <div id="terapiaContent" style="display:none;">
@@ -571,6 +580,7 @@
                 <div class="card"><div class="card-header"><h3>Registro Contenzioni</h3></div><table class="data-table" id="contenzioniTable"><thead><tr><th>Ospite</th><th>Tipo Presidio</th><th>Inizio</th><th>Motivo Clinico</th><th>Firme (Tablet)</th><th>Stato / Revoca</th></tr></thead><tbody></tbody></table></div>
             </div>
 
+            <!-- CONSEGNE E RISCHIO -->
             <div id="ws-consegne" class="workspace">
                 <div class="card" style="border-top: 6px solid #4f46e5;">
                     <div class="card-header"><h3 style="color:#4f46e5;">📖 Bacheca Consegne Reparto</h3></div>
@@ -640,7 +650,26 @@
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
 
-        // 1. DEFINIZIONE VARIABILI GLOBALI E CONFIGURAZIONI (Prima di ogni funzione)
+        // 0. INIZIALIZZAZIONE FIREBASE
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
+            authDomain: "gestione-visite-b445b.firebaseapp.com", 
+            projectId: "gestione-visite-b445b", 
+            storageBucket: "gestione-visite-b445b.firebasestorage.app", 
+            messagingSenderId: "720937824810", 
+            appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
+        };
+        const app = initializeApp(firebaseConfig);
+        try {
+            if(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.')) {
+                self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+            }
+            initializeAppCheck(app, { provider: new ReCaptchaEnterpriseProvider('6LdSQ5wtAAAAAKxlPkk0UBsfJK5gzJdn_NLJm6U3'), isTokenAutoRefreshEnabled: true });
+        } catch (e) { console.warn("AppCheck Bypass in locale:", e); }
+        
+        const db = getFirestore(app);
+
+        // 1. DEFINIZIONE VARIABILI GLOBALI E CONFIGURAZIONI
         window.dbOperatori=[]; window.dbOspiti=[]; window.dbRischio=[]; window.dbCup=[]; window.dbStupefacentiInv=[]; window.dbStupefacentiLog=[]; window.dbConsegne=[]; window.dbClinica={}; window.dbContenzioni = []; window.dbStruttura = {};
         let curTerDate = new Date(); let curTerMonth = curTerDate.getMonth(); let curTerYear = curTerDate.getFullYear();
         const monthNames = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
@@ -658,12 +687,18 @@
         window.getTodayString = () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; };
         window.showToast = (m) => { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='toast'; t.innerText=m; c.appendChild(t); setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); };
         
+        window.deleteRecord = async (colName, id) => { 
+            if(window.checkOssRestriction()) return; 
+            if(confirm("Eliminare definitivamente questo record?")) { 
+                await deleteDoc(doc(db, colName, id)); window.showToast("🗑️ Record eliminato."); 
+            } 
+        };
+
         // 3. FUNZIONI DI SISTEMA (FIRME E LOGIN)
         window.isMedicoOrAdmin = () => ['Medico','Direttore Sanitario'].includes(window.activeOperatorQualifica) || window.activeOperatorRole==='admin';
         window.checkOssRestriction = () => { if(window.activeOperatorQualifica==='OSS'){ window.showToast("⚠️ Sola Lettura: Area Riservata"); return true; } return false; };
         window.applyRolePermissions = () => { document.body.setAttribute('data-qualifica', window.activeOperatorQualifica); if(window.isMedicoOrAdmin()) document.body.setAttribute('data-med-access','true'); else document.body.removeAttribute('data-med-access'); if(window.activeOperatorRole==='admin') document.body.setAttribute('data-role', 'admin'); else document.body.removeAttribute('data-role'); };
         
-        // Login Logic
         window.renderLoginProfiles = () => { const c = document.getElementById('profiles-container'); c.innerHTML = ''; if(window.dbOperatori.length === 0) return c.innerHTML = `<h2 style="color:white; grid-column:1/-1;">Nessun profilo trovato.</h2>`; window.dbOperatori.forEach(op => { let div = document.createElement('div'); div.className = 'profile-card'; div.innerHTML = `<div class="profile-avatar">🧑‍⚕️</div><div class="profile-name">${op.name.split(' ')[0]}</div><div class="profile-role">${op.qualifica||''}</div>`; div.onclick = () => window.showPinPad(op); c.appendChild(div); }); };
         window.showPinPad = (op) => { window.selectedLoginOperatorName = op.name; window.currentPin = ""; document.getElementById('profiles-container').style.display = 'none'; document.getElementById('pin-pad-area').style.display = 'flex'; document.getElementById('pin-welcome').innerText = "Ciao " + op.name.split(' ')[0]; window.updatePinDisplay(); };
         window.addPin = (num) => { if(window.currentPin.length < 10) window.currentPin += num; window.updatePinDisplay(); };
@@ -686,7 +721,7 @@
         window.clearModalSignature = () => { const canvas = document.getElementById('modalSignaturePad'); if(!canvas) return; const ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, canvas.width, canvas.height); };
         window.confirmModalSignature = () => { const canvas = document.getElementById('modalSignaturePad'); if(!canvas) return; const b64 = canvas.toDataURL('image/png'); if(window.activeSignatureCallback) window.activeSignatureCallback(b64); window.closeSignatureModal(); };
 
-        // 6. GESTIONE RENDERING OSPITI, TABELLE E SIDEBAR
+        // 6. GESTIONE RENDERING OSPITI E SIDEBAR
         window.renderSidebarPatients = () => { const l = document.getElementById('sidebarPatientList'); const s = document.getElementById('sidebarSearch')?.value.toLowerCase()||''; if(!l) return; l.innerHTML=''; window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione).sort((a,b)=>a.name.localeCompare(b.name)).forEach(g => { if(s && !g.name.toLowerCase().includes(s)) return; let av = g.photo ? `<img src="${g.photo}" class="sidebar-avatar">` : `<div class="sidebar-avatar">👤</div>`; let pD = window.dbClinica[g.name] || {}; let sideBadges = ''; if(pD.infezione) sideBadges += '☣️ '; if(pD.disfagia) sideBadges += '🥣 '; l.innerHTML += `<div class="sidebar-item ${g.name===window.globalSelectedPatient?'active':''}" onclick="window.selectPatientGlobal('${g.name.replace(/'/g, "\\'")}')">${av}<div style="font-weight:bold; overflow:hidden; text-overflow:ellipsis; flex-grow:1;">${g.name}</div><div style="font-size:1.2em;">${sideBadges}</div></div>`; }); };
         
         window.selectPatientGlobal = (n) => { 
@@ -759,15 +794,7 @@
             ['Med', 'Inf', 'Oss'].forEach(ruolo => { let idPref = 'paiFirma' + ruolo; let btnId = 'btnFirma' + (ruolo === 'Med' ? 'Medico' : (ruolo === 'Inf' ? 'Infermiere' : 'OSS')); if (document.getElementById(idPref + 'Date')) { let val = d[idPref + 'Date'] || ""; let b64 = d[idPref + 'B64'] || ""; document.getElementById(idPref + 'Date').value = val; if (b64) { document.getElementById(idPref + 'Status').innerHTML = `✅ Firmato:<br><strong>${val}</strong><br><img src="${b64}" style="max-height:50px; border:1px solid #ccc; background:#fff; margin-top:5px; max-width:100%; border-radius:4px;">`; document.getElementById(btnId).style.display = 'none'; } else if (val) { document.getElementById(idPref + 'Status').innerHTML = `✅ Firmato:<br><strong>${val}</strong>`; document.getElementById(btnId).style.display = 'none'; } else { document.getElementById(idPref + 'Status').innerHTML = `⏳ In attesa`; document.getElementById(btnId).style.display = 'block'; } } });
             
             window.currentBodyMarkers = d.chkMarkers?[...d.chkMarkers]:[]; 
-            window.renderBodyMarkers(); 
-            window.calcolaBINA(); 
-            window.renderTerapiaTable(n,d); 
-            window.renderVitals(n,d); 
-            window.renderAssistenza(n,d); 
-            window.renderDispositivi(n,d); 
-            window.aggiornaBannerPAI(); 
-            window.renderDiario(n,d); 
-            window.renderPatientDocs(n,d);
+            window.renderBodyMarkers(); window.calcolaBINA(); window.renderTerapiaTable(n,d); window.renderVitals(n,d); window.renderAssistenza(n,d); window.renderDispositivi(n,d); window.aggiornaBannerPAI(); window.renderDiario(n,d); window.renderPatientDocs(n,d);
         };
         
         window.saveClinicalData = async () => { let n=document.getElementById('clinicalGuestSelect').value; if(!n) return; let d = window.dbClinica[n]||{}; ['chkGen','chkPiaghe','binaAuto','binaSanita','binaPsiche','binaSociale','paiDataStesura','paiDataRevisione','paiMedico','paiInfermieristico','paiAssistenziale'].forEach(id=>{if(document.getElementById(id)) d[id]=document.getElementById(id).value;}); d.disfagia = document.getElementById('chkDisfagia') ? document.getElementById('chkDisfagia').checked : false; d.infezione = document.getElementById('selInfezione') ? document.getElementById('selInfezione').value : ""; d.chkMarkers = window.currentBodyMarkers?[...window.currentBodyMarkers]:[]; ['paiFirmaMedDate', 'paiFirmaInfDate', 'paiFirmaOssDate'].forEach(id => { if (document.getElementById(id)) d[id] = document.getElementById(id).value; }); await setDoc(doc(db, "cartelle_cliniche", n), d); window.showToast("💾 Dati Salvati"); };
@@ -784,10 +811,14 @@
         window.addDiarioWithSignature = (tipo) => { const n = document.getElementById('diariGuestSelect').value || document.getElementById('clinicalGuestSelect').value; if(!n) return window.showToast("⚠️ Seleziona Ospite"); let txtId = tipo === 'Medico' ? 'notaMedicaText' : 'notaInfText'; let testo = document.getElementById(txtId).value.trim(); if(!testo) return window.showToast("⚠️ Scrivi il testo della nota"); window.openSignatureModal(`Nota ${tipo} per ${n}`, async (sig) => { const docRef = doc(db, "cartelle_cliniche", n); const docSnap = await getDoc(docRef); let d = docSnap.exists() ? docSnap.data() : (window.dbClinica[n] || {}); if(!d.diarioClinico) d.diarioClinico = []; d.diarioClinico.unshift({ data: window.getTimestamp(), op: window.activeOperator, ruolo: window.activeOperatorQualifica, tipo: tipo === 'Medico' ? 'Nota Medica' : 'Nota Infermieristica', testo: testo }); await setDoc(docRef, d); document.getElementById(txtId).value = ''; document.getElementById(tipo === 'Medico' ? 'box-nota-medica' : 'box-nota-infermiere').style.display = 'none'; window.renderDiario(n, d); window.showToast(`✅ Nota ${tipo} Registrata`); }); };
         window.renderDiario = (n, d) => { const listMed = document.getElementById('diariMediciList'); const listInf = document.getElementById('diariInfList'); if(listMed) listMed.innerHTML = ''; if(listInf) listInf.innerHTML = ''; let hasMed = false, hasInf = false; if(d.diarioClinico && d.diarioClinico.length > 0) { d.diarioClinico.forEach(nota => { if(nota.tipo === 'Nota Medica') { if(listMed) listMed.innerHTML += `<div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:10px; display:flex; flex-direction:column; gap:8px; margin-bottom:10px;"><div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #bbf7d0; padding-bottom:5px;"><strong style="color:#15803d; font-size:1.05em;">${nota.op}</strong><small style="color:var(--text-light); font-weight:bold;">${nota.data}</small></div><div style="font-size:1.1em; padding-top:5px; line-height:1.4;">${nota.testo}</div></div>`; hasMed = true; } else if(nota.tipo === 'Nota Infermieristica') { if(listInf) listInf.innerHTML += `<div style="background:#f0f9ff; border:1px solid #bae6fd; padding:15px; border-radius:10px; display:flex; flex-direction:column; gap:8px; margin-bottom:10px;"><div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #bae6fd; padding-bottom:5px;"><strong style="color:#0284c7; font-size:1.05em;">${nota.op}</strong><small style="color:var(--text-light); font-weight:bold;">${nota.data}</small></div><div style="font-size:1.1em; padding-top:5px; line-height:1.4;">${nota.testo}</div></div>`; hasInf = true; } }); } if(!hasMed && listMed) listMed.innerHTML = '<p style="color:var(--text-light); text-align:center;">Nessuna nota medica presente.</p>'; if(!hasInf && listInf) listInf.innerHTML = '<p style="color:var(--text-light); text-align:center;">Nessuna nota infermieristica presente.</p>'; };
 
-        // 11. PARAMETRI VITALI
+        // 11. PARAMETRI VITALI E DISPOSITIVI
         window.addRapVitalsWithSignature = () => { const n=document.getElementById('vitaliGuestSelect').value; if(!n) return window.showToast("⚠️ Seleziona Ospite"); const pa=document.getElementById('rap-vitPA').value; const fc=document.getElementById('rap-vitFC').value; const spo2=document.getElementById('rap-vitSPO2').value; const tc=document.getElementById('rap-vitTC').value; const gli=document.getElementById('rap-vitGLI').value; const nrs=document.getElementById('rap-vitNRS').value; if(!pa && !fc && !spo2 && !tc && !gli && !nrs) return window.showToast("⚠️ Compila almeno un parametro"); window.openSignatureModal("Rilevazione Parametri Vitali", async (sigBase64) => { const docRef = doc(db, "cartelle_cliniche", n); const docSnap = await getDoc(docRef); let d = docSnap.exists() ? docSnap.data() : (window.dbClinica[n] || {}); if(!d.vitals) d.vitals=[]; d.vitals.unshift({date:window.getTimestamp(), op:window.activeOperator, pa:pa, fc:fc, spo2:spo2, tc:tc, gli:gli, nrs:nrs}); await setDoc(docRef, d); window.renderVitals(n,d); window.showToast("✅ Parametri Registrati"); ['rap-vitPA', 'rap-vitFC', 'rap-vitSPO2', 'rap-vitTC', 'rap-vitGLI', 'rap-vitNRS'].forEach(id => document.getElementById(id).value = ''); }); };
         window.renderVitals = (n, d) => { const tb = document.querySelector('#rapVitalsTable tbody'); let html = ''; if(d.vitals) d.vitals.forEach((v,i) => { let nrsBadge = v.nrs ? `<span style="background:${v.nrs>4?'var(--error-color)':'var(--success-color)'}; color:white; padding:2px 6px; border-radius:4px;">${v.nrs}</span>` : '-'; html += `<tr><td>${v.date}</td><td><strong>${window.getInitials(v.op)}</strong></td><td>${v.pa||'-'}</td><td>${v.fc||'-'}</td><td>${v.spo2||'-'}</td><td>${v.tc||'-'}</td><td>${v.gli||'-'}</td><td>${nrsBadge}</td><td class="restrict-oss"><button class="btn-danger" style="padding:5px;" onclick="window.deleteVital(${i})">X</button></td></tr>`; }); if(tb) tb.innerHTML = html; const ctx = document.getElementById('vitalsChart'); if(!ctx) return; if(window.vitalsChartInstance) window.vitalsChartInstance.destroy(); let revVitals = [...(d.vitals||[])].reverse().slice(-15); let labels = revVitals.map(v => v.date.split(' alle ')[0].substring(0,5)); let dataFC = revVitals.map(v => v.fc ? parseFloat(v.fc) : null); let dataSpO2 = revVitals.map(v => v.spo2 ? parseFloat(v.spo2) : null); let dataTC = revVitals.map(v => v.tc ? parseFloat(v.tc) : null); window.vitalsChartInstance = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [ { label: 'FC (bpm)', data: dataFC, borderColor: '#c026d3', backgroundColor: 'transparent', tension: 0.3, pointRadius: 4 }, { label: 'SpO2 (%)', data: dataSpO2, borderColor: '#0284c7', backgroundColor: 'transparent', tension: 0.3, pointRadius: 4 }, { label: 'TC (°C)', data: dataTC, borderColor: '#d97706', backgroundColor: 'transparent', tension: 0.3, pointRadius: 4 } ] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } }); };
         window.deleteVital = async (i) => { if(window.checkOssRestriction()) return; if(!confirm("Eliminare parametro vitale in modo permanente?")) return; const n = document.getElementById('vitaliGuestSelect').value; let d = window.dbClinica[n]; d.vitals.splice(i, 1); await setDoc(doc(db, "cartelle_cliniche", n), d); window.renderVitals(n, d); window.showToast("🗑️ Record eliminato."); };
+
+        window.addDispositivoWithSignature = () => { if(window.checkOssRestriction()) return; const n = document.getElementById('clinicalGuestSelect').value; if(!n) return window.showToast("⚠️ Seleziona Ospite"); const tipo = document.getElementById('dispTipo').value; const start = document.getElementById('dispDataInizio').value; const end = document.getElementById('dispDataScadenza').value; const note = document.getElementById('dispNote').value; if(!start) return window.showToast("⚠️ Data Inserimento obbligatoria"); window.openSignatureModal("Gestione Dispositivo - " + tipo, async (sigBase64) => { const docRef = doc(db, "cartelle_cliniche", n); const docSnap = await getDoc(docRef); let d = docSnap.exists() ? docSnap.data() : (window.dbClinica[n] || {}); if(!d.dispositivi) d.dispositivi = []; d.dispositivi.unshift({ tipo: tipo, dataInizio: start, scadenza: end, note: note, op: window.activeOperator, firmaB64: sigBase64, stato: "ATTIVO" }); await setDoc(docRef, d); window.renderDispositivi(n, d); window.showToast("✅ Dispositivo Registrato!"); document.getElementById('dispNote').value = ''; }); };
+        window.rimuoviDispositivo = async (index) => { if(window.checkOssRestriction()) return; if(confirm("Segnare questo dispositivo come RIMOSSO/SOSTITUITO?")) { const n = document.getElementById('clinicalGuestSelect').value; let d = window.dbClinica[n]; d.dispositivi[index].stato = "RIMOSSO"; await setDoc(doc(db, "cartelle_cliniche", n), d); window.renderDispositivi(n, d); window.showToast("✅ Dispositivo aggiornato."); } };
+        window.renderDispositivi = (n, d) => { const tb = document.querySelector('#dispositiviTable tbody'); let html = ''; if(d.dispositivi) { d.dispositivi.forEach((disp, i) => { let st = disp.stato === "ATTIVO" ? `<span style="color:var(--success-color); font-weight:bold;">ATTIVO</span><br><button class="btn-warning restrict-oss" style="padding:6px; font-size:0.8em; margin-top:5px;" onclick="window.rimuoviDispositivo(${i})">Segna Rimosso</button>` : `<span style="color:var(--text-light);">RIMOSSO</span>`; let sig = disp.firmaB64 ? `<img src="${disp.firmaB64}" style="max-height:40px; border-radius:4px; background:#fff;"><br><small>${window.getInitials(disp.op)}</small>` : window.getInitials(disp.op); html += `<tr><td><strong>${disp.tipo}</strong></td><td>${window.formatDateSafe(disp.dataInizio)}</td><td>${window.formatDateSafe(disp.scadenza) || '-'}</td><td>${disp.note}</td><td>${sig}</td><td>${st}</td></tr>`; }); } if(tb) tb.innerHTML = html; };
 
         // 12. ASSISTENZA OSS
         window.addAssistenzaWithSignature = () => { const n = document.getElementById('vitaliGuestSelect').value; if(!n) return window.showToast("⚠️ Seleziona Ospite"); const alvo = document.getElementById('rap-assAlvo').value; const diuresi = document.getElementById('rap-assDiuresi').value; const idrat = document.getElementById('rap-assIdratazione').value; const igiene = document.getElementById('rap-assIgiene').value; if(!alvo && !diuresi && !idrat && !igiene) return window.showToast("⚠️ Compila almeno un parametro assistenziale"); window.openSignatureModal("Diario Assistenziale OSS", async (sigBase64) => { const docRef = doc(db, "cartelle_cliniche", n); const docSnap = await getDoc(docRef); let d = docSnap.exists() ? docSnap.data() : (window.dbClinica[n] || {}); if(!d.assistenza) d.assistenza = []; d.assistenza.unshift({ date: window.getTimestamp(), op: window.activeOperator, alvo: alvo, diuresi: diuresi, idratazione: idrat, igiene: igiene }); await setDoc(docRef, d); window.renderAssistenza(n, d); window.showToast("✅ Diario OSS Registrato"); ['rap-assAlvo', 'rap-assDiuresi', 'rap-assIdratazione', 'rap-assIgiene'].forEach(id => document.getElementById(id).value = ''); }); };
@@ -814,6 +845,10 @@
         window.firmaContenzione = (id, ruolo) => { if(window.activeOperatorQualifica !== ruolo && window.activeOperatorRole !== 'admin') { return window.showToast(`🚫 Solo un ${ruolo} può apporre questa firma.`); } window.openSignatureModal(`Validazione Contenzione - ${ruolo}`, async (b64) => { let cont = window.dbContenzioni.find(c => c.id === id); if(cont) { let updateData = { firme: cont.firme || {} }; updateData.firme[ruolo] = { op: window.activeOperator, data: window.getTimestamp(), b64: b64 }; await updateDoc(doc(db, "contenzioni", id), updateData); window.showToast(`✅ Firma ${ruolo} registrata.`); } }); };
         window.revocaContenzione = async (id) => { if(window.checkOssRestriction()) return; if(confirm("Revocare e rimuovere definitivamente la contenzione?")) { await updateDoc(doc(db, "contenzioni", id), { stato: "REVOCATA", dataRevoca: window.getTimestamp(), revocaOp: window.activeOperator }); window.showToast("🔓 Contenzione Revocata"); } };
 
+        window.loadConsegne = () => { ['inf','oss'].forEach(t => { const l = document.getElementById(`consegne${t.charAt(0).toUpperCase()+t.slice(1)}List`); if(l){ l.innerHTML=''; window.dbConsegne.filter(c => c.type === t).forEach(c => { l.innerHTML += `<div style="border:2px solid #e2e8f0; padding:15px; margin-bottom:15px; border-radius:10px; background:#f8fafc; box-shadow:0 2px 4px rgba(0,0,0,0.03);"><small style="color:var(--text-light); font-weight:bold;">${c.date} - ${c.op}</small><div style="margin-top:8px; line-height:1.4;">${c.text}</div></div>`; }); } }); };
+        window.toggleConsegna = (tipo) => { const boxInf = document.getElementById('box-consegna-inf'); const boxOss = document.getElementById('box-consegna-oss'); if(tipo === 'inf') { boxInf.style.display = boxInf.style.display === 'none' ? 'block' : 'none'; boxOss.style.display = 'none'; } else { boxOss.style.display = boxOss.style.display === 'none' ? 'block' : 'none'; boxInf.style.display = 'none'; } };
+        window.addConsegnaWithSignature = (t) => { if (t === 'inf' && window.activeOperatorQualifica !== 'Infermiere' && window.activeOperatorRole !== 'admin') return window.showToast("🚫 Solo Infermieri."); if (t === 'oss' && window.activeOperatorQualifica !== 'OSS' && window.activeOperatorRole !== 'admin') return window.showToast("🚫 Solo OSS."); const txtId = t === 'inf' ? 'newConsegnaInfText' : 'newConsegnaOssText'; const x = document.getElementById(txtId).value; if(!x) return window.showToast("⚠️ Nessun testo inserito"); window.openSignatureModal("Bacheca Consegne " + t.toUpperCase(), async (sig) => { await addDoc(collection(db,"consegne"), {text:x, type:t, op:window.activeOperator, date:window.getTimestamp()}); document.getElementById(txtId).value=''; document.getElementById(t === 'inf' ? 'box-consegna-inf' : 'box-consegna-oss').style.display = 'none'; window.showToast("✅ Consegna salvata e firmata"); }); };
+
         // 15. FIREBASE SNAPSHOTS E INITIALIZATION
         onSnapshot(doc(db, "struttura", "info"), snap => { if(snap.exists()) { window.dbStruttura = snap.data(); let dTitle = window.dbStruttura.denominazione || 'NUOVA VILLA SILVANA'; let stTitle = window.dbStruttura.tipo || 'Residenza Protetta per Anziani'; let lh = document.querySelector('.login-header-title h1'); if(lh) lh.innerText = dTitle.toUpperCase(); let lh2 = document.querySelector('.login-header-title h2'); if(lh2) lh2.innerText = stTitle; } });
         onSnapshot(collection(db, "operatori"), snap => { let ops = snap.docs.map(d=>({id:d.id, ...d.data()})); ops = ops.filter(o => o && o.name && o.name.trim() !== ""); if(!ops.some(o => o.name === "Admin")) { ops.push({id:"admin-fallback", name:"Admin", pin:"12345", role:"admin", qualifica:"Direttore Sanitario"}); } window.dbOperatori = ops.sort((a,b) => a.name.localeCompare(b.name)); window.renderLoginProfiles(); });
@@ -821,10 +856,8 @@
         onSnapshot(collection(db, "cartelle_cliniche"), snap => { window.dbClinica = {}; snap.forEach(d => { window.dbClinica[d.id] = d.data(); }); if(window.dbOspiti.length > 0 && window.activeOperator) { window.loadAlerts(); window.renderSidebarPatients(); } if(window.globalSelectedPatient && window.activeOperator) { if(document.getElementById('ws-consensi').classList.contains('active')) window.loadConsensiOspite(); else window.handlePatientSelect('clinicalGuestSelect'); } });
         onSnapshot(collection(db, "rischio"), snap => { window.dbRischio = snap.docs.map(d=>({id:d.id, ...d.data()})).sort((a,b) => new Date(b.data) - new Date(a.data)); if(window.activeOperator) window.loadRischio(); });
         onSnapshot(collection(db, "cup"), snap => { window.dbCup = snap.docs.map(d=>({id:d.id, ...d.data()})); if(window.activeOperator) window.loadAppointments(); });
-        onSnapshot(collection(db, "stupefacenti_inv"), snap => { window.dbStupefacentiInv = snap.docs.map(d=>({id:d.id, ...d.data()})); if(window.activeOperator) window.loadNarcoticsTable(); });
-        onSnapshot(collection(db, "stupefacenti_log"), snap => { window.dbStupefacentiLog = snap.docs.map(d=>({id:d.id, ...d.data()})); if(window.activeOperator) window.loadNarcoticsTable(); });
-        onSnapshot(collection(db, "consegne"), snap => { window.dbConsegne = snap.docs.map(d=>({id:d.id, ...d.data()})).sort((a,b) => new Date(b.date.replace(' alle ','T')) - new Date(a.date.replace(' alle ','T'))); if(window.activeOperator) window.loadConsegne(); });
         onSnapshot(collection(db, "contenzioni"), snap => { window.dbContenzioni = snap.docs.map(d=>({id:d.id, ...d.data()})); if(window.activeOperator) window.loadContenzioni(); });
+        onSnapshot(collection(db, "consegne"), snap => { window.dbConsegne = snap.docs.map(d=>({id:d.id, ...d.data()})).sort((a,b) => new Date(b.date.replace(' alle ','T')) - new Date(a.date.replace(' alle ','T'))); if(window.activeOperator) window.loadConsegne(); });
 
         onSnapshot(collection(db, "haccp_registri"), snap => { 
             let t = window.getTodayString(); let hasTemp = false, hasAree = false, hasPulizie = false;
@@ -834,15 +867,18 @@
             let bp = document.getElementById('badge-haccp-pulizie'); if(bp) { bp.innerText = hasPulizie ? "🟢 Fatto" : "🔴 Da fare"; bp.style.color = hasPulizie ? "var(--success-color)" : "var(--error-color)"; }
         });
 
-        // 17. INIT ONLOAD
+        // 16. INIT ONLOAD
         window.onload = () => { 
             let pi = document.getElementById('loginPinInput'); 
             if(pi) pi.addEventListener('keypress', (e)=>{if(e.key==='Enter') window.performLogin();});
             
             let todayStr = window.getTodayString();
-            ['alloggiatiStart','alloggiatiEnd'].forEach(id=>{ let inputDate = document.getElementById(id); if(inputDate) { inputDate.value = todayStr; } });
+            ['alloggiatiStart','alloggiatiEnd'].forEach(id=>{
+                let inputDate = document.getElementById(id);
+                if(inputDate) { inputDate.value = todayStr; }
+            });
+
             const dl = document.getElementById('listaFarmaciAifa'); if(dl) prontuario.forEach(f => { let opt = document.createElement('option'); opt.value = f; dl.appendChild(opt); }); 
-            
             window.loadComuni(); 
             window.initSignaturePad();
 
