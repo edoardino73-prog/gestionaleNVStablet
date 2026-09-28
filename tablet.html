@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>NVS Mobile Ward - Sistema Integrato Reparto, Qualità & Firma Elettronica</title>
+    
+    <link rel="icon" href="data:,">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root { 
+            --bg-color: #f8fafc; 
+            --box-bg: #ffffff; 
+            --primary-color: #0d9488; 
+            --secondary-color: #0f766e; 
+            --text-main: #0f172a; 
+            --text-light: #475569; 
+            --input-bg: #f8fafc; 
+            --border-color: #cbd5e1; 
+            --error-color: #e11d48; 
+            --warning-color: #d97706; 
+            --success-color: #059669; 
+            --dir-color: #4f46e5; 
+            --terapia-color: #0284c7; 
+            --app-color: #db2777; 
+            --acc-color: #7c3aed; 
+            --base-font-size: 13px; 
+            --radius: 8px; 
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: var(--text-main); font-size: var(--base-font-size); display: flex; flex-direction: column; height: 100vh; overflow: hidden; user-select: none; }
+        
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Gestione Permessi e Ruoli */
+        body[data-qualifica="OSS"] .restrict-oss { display: none !important; }
+        body[data-qualifica="OSS"] textarea.restrict-oss-input, body[data-qualifica="OSS"] input.restrict-oss-input, body[data-qualifica="OSS"] select.restrict-oss-input { pointer-events: none; opacity: 0.7; background-image: repeating-linear-gradient(45deg, #f1f5f9, #f1f5f9 10px, #e2e8f0 10px, #e2e8f0 20px) !important; cursor: not-allowed; border-color: #cbd5e1; }
+        body:not([data-med-access="true"]) .only-medico { display: none !important; }
+        body:not([data-med-access="true"]) .only-medico-input { pointer-events: none; opacity: 0.7; background-color: #f1f5f9;}
+        
+        .inf-edit-area, .oss-edit-area { display: none !important; }
+        body[data-qualifica="Infermiere"] .inf-edit-area, body[data-role="admin"] .inf-edit-area { display: block !important; }
+        body[data-qualifica="OSS"] .oss-edit-area, body[data-role="admin"] .oss-edit-area { display: block !important; }
+        
+        .req-medico, .req-infermiere { display: none; }
+        body[data-qualifica="Medico"] .req-medico, body[data-qualifica="Direttore Sanitario"] .req-medico, body[data-role="admin"] .req-medico { display: block; }
+        body[data-qualifica="Infermiere"] .req-infermiere, body[data-role="admin"] .req-infermiere { display: block; }
+        
+        /* Modale Firma Digitale Touch */
+        #signature-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.85); z-index: 30000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .signature-box { background: white; padding: 20px; border-radius: 12px; width: 95%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; display:flex; flex-direction:column; gap: 15px;}
+        #sig-canvas { border: 2px dashed var(--primary-color); border-radius: 6px; width: 100%; height: 220px; background: #f8fafc; cursor: crosshair; touch-action: none; }
+        .sig-controls { display: flex; justify-content: space-between; gap: 10px; }
+        
+        /* Login e PIN Pad */
+        #login-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--primary-color); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; color: white; }
+        .profiles-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 15px; width: 90%; max-width: 800px; max-height: 50vh; overflow-y: auto; padding: 10px; }
+        .profile-card { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px 10px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .profile-card:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
+        .profile-avatar { font-size: 2.5rem; margin-bottom: 5px; }
+        .profile-name { font-weight: bold; font-size: 1.1rem; }
+        .profile-role { font-size: 0.8rem; opacity: 0.9; }
+        
+        #pin-pad-area { display: none; flex-direction: column; align-items: center; animation: slideUp 0.3s ease; }
+        .pin-display { font-size: 2.5rem; letter-spacing: 15px; margin: 15px 0; height: 50px; text-align: center; background: rgba(0,0,0,0.15); border-radius: 12px; width: 100%; min-width: 250px; display:flex; align-items:center; justify-content:center;}
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .num-btn { width: 70px; height: 70px; border-radius: 50%; border: none; background: rgba(255,255,255,0.2); color: white; font-size: 1.8rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .num-btn:active { background: rgba(255,255,255,0.4); transform: scale(0.9); }
+        
+        /* Layout e Navigazione */
+        #tablet-header { display: none; flex-shrink: 0; background: var(--box-bg); padding: 10px 15px; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 1000; border-bottom: 3px solid var(--primary-color); }
+        .header-btn { padding: 10px 18px; border-radius: 20px; font-weight: bold; font-size: 1em; cursor: pointer; border: none; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s; }
+        .header-btn:active { transform: scale(0.95); }
+        .btn-back { background: var(--primary-color); color: white; display: none; }
+        .btn-logout { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+        
+        #home-menu { display: none; padding: 15px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; max-width: 1400px; margin: 0 auto; width: 100%; overflow-y: auto; height: 100%; align-content: start; flex-grow: 1; }
+        .module-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 15px; border-radius: 12px; font-size: 1.1em; font-weight: bold; color: white; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; transition: 0.2s; text-align: center; gap: 8px; }
+        .module-btn:active { transform: scale(0.96); }
+        .module-icon { font-size: 2.2em; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+        
+        #appScreen { display: none; flex-direction: row; flex-grow: 1; overflow: hidden; background: var(--bg-color); }
+        .sidebar { width: 260px; background: var(--box-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0; }
+        .sidebar-item { padding: 12px 10px; border-radius: 8px; cursor: pointer; margin: 5px 10px; display: flex; align-items: center; gap: 10px; border: 2px solid transparent; font-size: 1.05em; background:#f8fafc; text-transform: uppercase;}
+        .sidebar-item.active { background: #e0f2fe; border-color: var(--primary-color); font-weight:bold; }
+        .sidebar-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; background: #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 1.1em; flex-shrink:0; }
+        .main-content { padding: 15px; flex-grow: 1; overflow-y: auto; box-sizing: border-box; }
+        
+        .workspace { display: none; }
+        .workspace.active { display: block; animation: fadeIn 0.2s ease; }
+        
+        /* Elementi UI Base */
+        .card { background: var(--box-bg); padding: 18px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 2px 6px rgba(0,0,0,0.03); margin-bottom: 15px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; flex-wrap: wrap; gap:10px;}
+        .card-header h3 { margin: 0; color: var(--primary-color); font-size: 1.2em; text-transform: uppercase; }
+        
+        .btn-primary, .btn-success, .btn-danger, .btn-warning, .btn-doc, .btn-outline { color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display:inline-flex; align-items:center; justify-content:center; gap:8px; transition: 0.2s;}
+        .btn-primary { background: var(--secondary-color); } .btn-success { background: var(--success-color); } .btn-danger { background: var(--error-color); } .btn-warning { background: var(--warning-color); } .btn-doc { background: #475569; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); box-shadow: none; }
+        .btn-primary:active, .btn-success:active, .btn-danger:active, .btn-warning:active, .btn-outline:active { transform: translateY(2px); box-shadow: none; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.95em; color: var(--text-light); }
+        input[type="text"], input[type="password"], input[type="number"], input[type="date"], input[type="time"], textarea, select { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; background-color: var(--input-bg); color: var(--text-main); font-family: inherit; font-size: 1rem; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary-color); outline: none; background-color: #ffffff; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15); }
+        
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .metric-card { background: var(--box-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border-left: 5px solid var(--primary-color); min-height: 120px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);}
+        .metric-card h2 { margin: 0 0 5px 0; font-size: 2.2em; color: var(--primary-color); }
+        
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.95em; background: #ffffff; border-radius: 8px; overflow:hidden; }
+        .data-table th, .data-table td { border: 1px solid var(--border-color); padding: 10px; text-align: left; vertical-align: middle; }
+        .data-table th { background-color: var(--primary-color); color: white; font-weight: bold; text-transform: uppercase; font-size: 0.9em; }
+        .data-table tr:nth-child(even) { background-color: #f1f5f9; }
+
+        .guest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; margin-top: 15px; }
+        .guest-card { background: #ffffff; border: 1px solid var(--border-color); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; border-left: 4px solid var(--secondary-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+        .guest-card-top { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+        .guest-avatar { width: 55px; height: 55px; border-radius: 6px; object-fit: cover; background: #e2e8f0; border: 1px solid var(--border-color); overflow: hidden; display:flex; align-items:center; justify-content:center; font-size:1.8em;}
+        .guest-details { font-size: 0.9em; color: var(--text-main); line-height:1.5;}
+
+        .alert-item { background: #fef2f2; border: 1px solid #fca5a5; border-left: 4px solid #ef4444; padding: 12px; margin-bottom: 8px; border-radius: 6px; color: #991b1b; display: flex; justify-content: space-between; align-items: center; font-size:1.05em;}
+        .alert-item.warning { background: #fffbeb; border-color: #fcd34d; border-left-color: #f59e0b; color: #b45309; }
+        
+        #toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 40000; }
+        .toast { background: var(--text-main); color: #fff; padding: 14px 24px; border-radius: 8px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-size: 1.1em;}
+        .toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+
+    <!-- MODALE FIRMA DIGITALE TOUCH STABILE -->
+    <div id="signature-modal">
+        <div class="signature-box">
+            <h3 id="sig-title" style="margin:0; color:var(--primary-color); font-size:1.3em;">Apponi Firma Digitale</h3>
+            <p style="margin:0; color:var(--text-light); font-size:0.9em;"><strong id="sig-action-desc"></strong></p>
+            <canvas id="sig-canvas" width="400" height="200"></canvas>
+            <div class="sig-controls">
+                <button class="btn-doc" style="flex:1;" onclick="window.clearSignatureCanvas()">🔄 Pulisci</button>
+                <button class="btn-danger" style="flex:1;" onclick="window.closeSignatureModal()">❌ Annulla</button>
+                <button class="btn-success" style="flex:2;" onclick="window.saveSignatureCanvas()">✅ Conferma Firma</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCHERMATA LOGIN E PIN PAD -->
+    <div id="login-screen">
+        <h1 style="font-size: 2.5rem; margin-bottom: 10px; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">NVS Mobile Ward</h1>
+        <p style="margin-top: 0; font-size: 1.2rem; color: #ccfbf1; margin-bottom: 30px;">Sistema Operativo Strutture Residenziali</p>
+        <div id="profiles-container" class="profiles-grid"><h2 style="grid-column: 1 / -1; font-weight:normal; font-size:1.2rem;">Caricamento profili in corso...</h2></div>
+        <div id="pin-pad-area">
+            <h2 id="pin-welcome" style="font-size: 1.8rem; margin-bottom: 15px;"></h2>
+            <div id="pin-display" class="pin-display"></div>
+            <div class="numpad">
+                <button class="num-btn" onclick="window.addPin('1')">1</button><button class="num-btn" onclick="window.addPin('2')">2</button><button class="num-btn" onclick="window.addPin('3')">3</button>
+                <button class="num-btn" onclick="window.addPin('4')">4</button><button class="num-btn" onclick="window.addPin('5')">5</button><button class="num-btn" onclick="window.addPin('6')">6</button>
+                <button class="num-btn" onclick="window.addPin('7')">7</button><button class="num-btn" onclick="window.addPin('8')">8</button><button class="num-btn" onclick="window.addPin('9')">9</button>
+                <button class="num-btn" style="background: rgba(225, 29, 72, 0.8);" onclick="window.deleteLastPinDigit()">C</button>
+                <button class="num-btn" onclick="window.addPin('0')">0</button>
+                <button class="num-btn" style="background: rgba(5, 150, 105, 0.8);" onclick="window.submitPin()">OK</button>
+            </div>
+            <button class="btn-outline" style="border-color:rgba(255,255,255,0.6); color:white; margin-top: 25px; padding: 10px 20px; font-size:1rem;" onclick="window.resetPinLogin()">⬅️ Cambia Profilo</button>
+        </div>
+    </div>
+
+    <!-- NAVBAR TABLET -->
+    <div id="tablet-header">
+        <div style="display:flex; align-items:center; gap:15px;">
+            <button id="backToHomeBtn" class="header-btn btn-back" onclick="window.goHome()">⬅️ Menu</button>
+            <div id="header-title" style="font-size:1.5em; font-weight:bold; color:var(--text-main);">Home Menu</div>
+        </div>
+        <div style="display:flex; gap:15px; align-items:center;">
+            <div style="background:#f1f5f9; padding:8px 15px; border-radius:20px; border:1px solid #cbd5e1; display:flex; align-items:center; gap:10px;">
+                <span style="font-size:1.4em;">🧑‍⚕️</span>
+                <div>
+                    <div id="currentOpBadge" style="font-size:1.1em; font-weight:bold; color:var(--primary-color);">Nome</div>
+                    <div id="currentOpRole" style="font-size:0.9em; color:var(--text-light);">Qualifica</div>
+                </div>
+            </div>
+            <button class="header-btn btn-logout" onclick="window.logout()">🚪 Esci</button>
+        </div>
+    </div>
+
+    <!-- HOME MENU (GRIGLIA MODULI) -->
+    <div id="home-menu">
+        <button class="module-btn" style="background: linear-gradient(135deg, #0d9488, #0f766e);" onclick="window.switchTab('dashboard', '🏠 Dashboard e Metriche')"><span class="module-icon">🏠</span>Dashboard</button>
+        <button class="module-btn" style="background: linear-gradient(135deg, #10b981, #059669);" onclick="window.switchTab('elenco', '👥 Elenco Ospiti')"><span class="module-icon">👥</span>Elenco Ospiti</button>
+        <button class="module-btn" style="background: linear-gradient(135deg, #f43f5e, #be123c);" onclick="window.switchTab('vitali', '🩺 Parametri Vitali')"><span class="module-icon">🩺</span>Parametri Vitali</button>
+        <button class="module-btn" style="background: linear-gradient(135deg, #0284c7, #0369a1);" onclick="window.switchTab('clinica', '⚕️ Cartella Clinica & PAI')"><span class="module-icon">⚕️</span>Cartella Clinica</button>
+        <button class="module-btn" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);" onclick="window.switchTab('diari', '📝 Diari Medico e Infermieristico')"><span class="module-icon">📝</span>Diari Med / Inf</button>
+        <button class="module-btn" style="background: linear-gradient(135deg, #4f46e5, #3730a3);" onclick="window.switchTab('consensi', '✍️ Consensi & Privacy')"><span class="module-icon">✍️</span>Consensi & Privacy</button>
+        <button class="module-btn" style="background: linear-gradient(135deg, #7c3aed, #5b21b6);" onclick="window.switchTab('qualita', '🎖️ Qualità ISO 9001 & Accreditamento')"><span class="module-icon">🎖️</span>Qualità & ISO</button>
+        <button class="module-btn" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);" onclick="window.switchTab('terapia', '💊 Terapia Standard')"><span class="module-icon">💊</span>Terapia Ord.</button>
+        <button class="module-btn restrict-oss" style="background: linear-gradient(135deg, #e11d48, #be123c);" onclick="window.switchTab('contenzioni', '🔒 Registro Contenzioni')"><span class="module-icon">🔒</span>Contenzioni</button>
+        <button class="module-btn restrict-oss" style="background: linear-gradient(135deg, #ca8a04, #a16207);" onclick="window.switchTab('rischio', '⚠️ Incident Reporting')"><span class="module-icon">⚠️</span>Rischio Clinico</button>
+        <button class="module-btn" style="background: linear-gradient(135deg, #d97706, #b45309);" onclick="window.switchTab('appuntamenti', '📅 Agenda e CUP')"><span class="module-icon">📅</span>Agenda CUP</button>
+        <button class="module-btn" style="background: linear-gradient(135deg, #059669, #047857);" onclick="window.switchTab('consegne', '📖 Consegne Operatori')"><span class="module-icon">📖</span>Consegne Reparto</button>
+        <button class="module-btn" style="background: linear-gradient(135deg, #475569, #334155);" onclick="window.switchTab('storico', '🗄️ Storico Pazienti')"><span class="module-icon">🗄️</span>Storico Pazienti</button>
+    </div>
+<!-- AREA OPERATIVA COMPLETA TABLET -->
+    <div id="appScreen">
+        <!-- SIDEBAR PAZIENTI -->
+        <div class="sidebar" id="patientSidebar">
+            <div style="padding: 15px; border-bottom: 1px solid var(--border-color); background: white; position: sticky; top: 0; z-index: 2;">
+                <input type="text" id="sidebarSearch" placeholder="🔍 Cerca Paziente..." onkeyup="window.renderSidebarPatients()" style="width:100%; padding: 10px; border-radius:6px; border:1px solid var(--border-color);">
+            </div>
+            <div id="sidebarPatientList" style="padding: 10px; overflow-y: auto; flex: 1;"></div>
+        </div>
+
+        <div class="main-content">
+            
+            <!-- 1. DASHBOARD E METRICHE (RIPRISTINATA) -->
+            <div id="ws-dashboard" class="workspace active">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h2 style="margin:0; color:var(--text-main); font-size:1.8em;">Dashboard Generale</h2>
+                    <button id="btnToggleAdmin" class="btn-outline" style="border-color:var(--dir-color); color:var(--dir-color); font-size:1.1em; padding:10px 20px; font-weight:bold; background:#f8fafc; display:inline-block !important;" onclick="const p = document.getElementById('adminPanel'); p.style.display = p.style.display === 'none' ? 'block' : 'none';">⚙️ Impostazioni Staff</button>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card"><h2 id="dash-guests-count">0</h2><span style="font-weight:bold; color:var(--text-light);">Posti Letto Occupati</span></div>
+                    <div class="metric-card" style="border-left-color: var(--app-color);"><h2 id="dash-app-count" style="color: var(--app-color);">0</h2><span style="font-weight:bold; color:var(--text-light);">Visite CUP Odierne</span></div>
+                    <div class="metric-card" style="border-left-color: var(--error-color);"><h2 id="dash-cont-count" style="color: var(--error-color);">0</h2><span style="font-weight:bold; color:var(--text-light);">Contenzioni Attive</span></div>
+                </div>
+
+                <div class="card" style="border-top:4px solid var(--warning-color);">
+                    <div class="card-header"><h3 style="color:var(--warning-color);">⚠️ Scadenziario Legale e Alert Clinici</h3></div>
+                    <div id="dashboardAlertsList" style="display:flex; flex-direction:column; gap:8px;"></div>
+                </div>
+
+                <!-- PANNELLO ADMIN (STAFF) -->
+                <div id="adminPanel" style="display: none; margin-top: 20px; border: 3px dashed var(--dir-color); padding: 20px; border-radius: 12px; background: #fff;">
+                    <h2 style="color:var(--dir-color); margin-top:0; text-align:center; font-size:1.5em;">⚙️ Area Amministratore</h2>
+                    <div class="card" style="border-color: var(--dir-color); box-shadow:none;">
+                        <div class="card-header"><h3 style="color:var(--dir-color);">Gestione Staff e Operatori</h3></div>
+                        <div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; background: #f8fafc; padding:15px; border-radius:8px; border:1px solid var(--border-color);">
+                            <div class="form-group" style="flex:2; margin:0;"><label>Nome e Cognome</label><input type="text" id="newOpInput"></div>
+                            <div class="form-group" style="flex:1; margin:0;"><label>Qualifica</label><select id="newOpQualifica"><option value="Infermiere">Infermiere</option><option value="Medico">Medico</option><option value="Direttore Sanitario">Direttore Sanitario</option><option value="OSS">OSS</option><option value="Fisioterapista">Fisioterapista</option></select></div>
+                            <div class="form-group" style="flex:1; margin:0;"><label>PIN (es. 1234)</label><input type="password" id="newOpPin"></div>
+                            <div class="form-group" style="flex:1; margin:0;"><label>Accesso</label><select id="newOpRole"><option value="user">Standard</option><option value="admin">Admin</option></select></div>
+                            <div style="display:flex; align-items:flex-end;"><button class="btn-primary" style="padding:10px 20px;" onclick="window.addOperator()">Aggiungi</button></div>
+                        </div>
+                        <ul id="operatorList" style="list-style:none; padding:0; display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:10px;"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. ELENCO OSPITI -->
+            <div id="ws-elenco" class="workspace">
+                <div class="card">
+                    <div class="card-header"><h3>Elenco Ospiti Presenti</h3></div>
+                    <div class="guest-grid" id="guestGrid"></div>
+                </div>
+            </div>
+
+            <!-- 3. PARAMETRI VITALI E DIARIO O.S.S. -->
+            <div id="ws-vitali" class="workspace">
+                <div class="card"><div class="form-group"><label>Seleziona Ospite</label><select id="vitaliGuestSelect" onchange="window.selectPatientGlobal(this.value)"><option value="" disabled selected>Scegli...</option></select></div></div>
+                
+                <div id="vitaliContent" style="display:none;">
+                    <div class="card" style="border-top:4px solid var(--error-color);">
+                        <div class="card-header"><h3 style="color:var(--error-color);">🩺 Parametri Vitali Rapidi</h3></div>
+                        <div class="restrict-oss" style="display:flex; gap:15px; flex-wrap:wrap; background:#fff1f2; padding:15px; border:1px solid #fecdd3; border-radius:8px; margin-bottom:20px;">
+                            <div class="form-group" style="flex:1; min-width:120px; margin:0;"><label style="color:#b91c1c;">P.A. (es. 120/80)</label><input type="text" id="rap-vitPA" placeholder="120/80"></div>
+                            <div class="form-group" style="flex:1; min-width:80px; margin:0;"><label style="color:#c026d3;">FC (bpm)</label><input type="number" id="rap-vitFC"></div>
+                            <div class="form-group" style="flex:1; min-width:80px; margin:0;"><label style="color:#0284c7;">SpO2 (%)</label><input type="number" id="rap-vitSPO2"></div>
+                            <div class="form-group" style="flex:1; min-width:80px; margin:0;"><label style="color:#d97706;">TC (°C)</label><input type="number" step="0.1" id="rap-vitTC"></div>
+                            <div class="form-group" style="flex:1; min-width:80px; margin:0;"><label>Glicemia</label><input type="number" id="rap-vitGLI"></div>
+                            <div class="form-group" style="flex:1; min-width:80px; margin:0;"><label>NRS (Dolore)</label><input type="number" id="rap-vitNRS" min="0" max="10"></div>
+                            <div style="display:flex; align-items:flex-end; width:100%; justify-content:flex-end;"><button class="btn-danger" style="padding:12px 25px; font-size:1.1em;" onclick="window.addRapVitals()">💾 Salva</button></div>
+                        </div>
+                        <div style="overflow-x:auto;"><table class="data-table" id="rapVitalsTable"><thead><tr><th>Data/Ora</th><th>Op</th><th>PA</th><th>FC</th><th>SpO2</th><th>TC</th><th>Glic.</th><th>NRS</th></tr></thead><tbody></tbody></table></div>
+                    </div>
+
+                    <div class="card" style="border-top: 4px solid #d97706;">
+                        <div class="card-header"><h3 style="color:#d97706;">🧻 Diario Assistenziale (O.S.S.)</h3></div>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; background:#fffbeb; padding:15px; border:1px solid #fde68a; border-radius:8px; margin-bottom:20px;">
+                            <div class="form-group" style="flex:1; margin:0;"><label>Alvo</label><select id="rap-assAlvo"><option value="">-- Seleziona --</option><option value="Regolare">Regolare</option><option value="Assente">Assente</option><option value="Diarroico">Diarroico</option></select></div>
+                            <div class="form-group" style="flex:1; margin:0;"><label>Diuresi</label><select id="rap-assDiuresi"><option value="">-- Seleziona --</option><option value="Regolare">Regolare</option><option value="Scarsa">Scarsa</option><option value="Catetere">Catetere</option></select></div>
+                            <div class="form-group" style="flex:1; margin:0;"><label>Idratazione (ml)</label><input type="number" id="rap-assIdratazione" placeholder="500"></div>
+                            <div class="form-group" style="flex:1; margin:0;"><label>Igiene</label><select id="rap-assIgiene"><option value="">-- Seleziona --</option><option value="A letto">A letto</option><option value="Bagno assistito">Bagno assistito</option></select></div>
+                            <div style="display:flex; align-items:flex-end; width:100%; justify-content:flex-end;"><button class="btn-warning" style="padding:12px 25px; font-size:1.1em; color:white;" onclick="window.addAssistenza()">💾 Salva OSS</button></div>
+                        </div>
+                        <div style="overflow-x:auto;"><table class="data-table" id="rapAssistenzaTable"><thead><tr><th>Data/Ora</th><th>Op</th><th>Alvo</th><th>Diuresi</th><th>Idrat. (ml)</th><th>Igiene</th></tr></thead><tbody></tbody></table></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. CARTELLA CLINICA E P.A.I. -->
+            <div id="ws-clinica" class="workspace">
+                <div class="card"><div class="form-group"><label>Seleziona Fascicolo Paziente</label><select id="clinicalGuestSelect" onchange="window.handlePatientSelect('clinicalGuestSelect')"><option value="" disabled selected>Scegli...</option></select></div></div>
+                <div id="clinicalContent" style="display:none;">
+                    <div class="card restrict-oss" style="border-top: 5px solid var(--warning-color);">
+                        <div class="card-header warning-header"><h3 style="color:var(--warning-color);">⚠️ Status Infettivo e Disfagia</h3></div>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; background:#fffbeb; padding:20px; border:1px solid #fde68a; border-radius:8px; margin-bottom:20px;">
+                            <div class="form-group" style="flex:1;"><label style="color:#b45309;">Disfagia</label><div style="margin-top:10px;"><input type="checkbox" id="chkDisfagia" style="transform:scale(1.5); margin-right:10px;"> Paziente Disfagico</div></div>
+                            <div class="form-group" style="flex:2;"><label style="color:#b45309;">Infezione (ICA)</label><select id="selInfezione" style="border-color:#fcd34d;"><option value="">Nessuna Infezione</option><option value="MRSA">MRSA</option><option value="Clostridium Difficile">Clostridium Difficile</option><option value="COVID-19">COVID-19</option></select></div>
+                            <div style="display:flex; align-items:flex-end; width:100%; justify-content:flex-end;"><button class="btn-warning" style="color:white; padding:12px 20px;" onclick="window.saveClinicalData()">💾 Salva Status</button></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header"><h3>Check-in e Condizioni Generali</h3></div>
+                        <div class="form-group"><label>Condizioni Generali all'Arrivo</label><textarea id="chkGen" class="restrict-oss-input" rows="3"></textarea></div>
+                        <div class="form-group"><label>Piaghe/Lesioni Presenti</label><textarea id="chkPiaghe" class="restrict-oss-input" rows="2"></textarea></div>
+                        <div class="restrict-oss" style="display:flex; gap:10px; margin-top:10px;"><button class="btn-success" style="padding:12px 20px;" onclick="window.saveClinicalData()">💾 Salva Condizioni</button></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header"><h3>P.A.I. Multidisciplinare</h3><button class="btn-primary restrict-oss" onclick="window.archiviaNuovoPAI()">➕ Nuovo PAI (Archivia)</button></div>
+                        <div id="paiStatusBanner" style="margin-bottom:15px;"></div>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;"><div class="form-group" style="flex:1;"><label>Data Stesura</label><input type="date" id="paiDataStesura" class="restrict-oss-input" onchange="window.calcProssimaRevisione()"></div><div class="form-group" style="flex:1;"><label>Data Scadenza PAI</label><input type="date" id="paiDataRevisione" class="restrict-oss-input" onchange="window.aggiornaBannerPAI()"></div></div>
+                        <div class="form-group"><label>Area Medica</label><textarea id="paiMedico" class="restrict-oss-input" rows="2"></textarea></div>
+                        <div class="form-group"><label>Area Infermieristica</label><textarea id="paiInfermieristico" class="restrict-oss-input" rows="2"></textarea></div>
+                        <div class="form-group"><label>Area Assistenziale (OSS)</label><textarea id="paiAssistenziale" class="restrict-oss-input" rows="2"></textarea></div>
+                        
+                        <div style="background:#f8fafc; border:1px solid var(--border-color); padding:20px; border-radius:8px; margin-top:20px;">
+                            <h4 style="margin:0 0 15px 0; color:var(--primary-color); font-size:1.1em;">Firme P.A.I. Multidisciplinare</h4>
+                            <div style="display:flex; gap:15px; flex-wrap:wrap;">
+                                <div style="flex:1; min-width:180px; background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:8px; text-align:center;">
+                                    <strong style="color:#166534; font-size:1.1em;">Medico</strong><br>
+                                    <div id="paiFirmaMedStatus" style="font-size:0.9em; color:var(--text-light); margin:10px 0;">⏳ In attesa</div>
+                                    <button id="btnFirmaMedico" class="btn-primary restrict-oss" style="width:100%; background:#15803d;" onclick="window.firmaPAI('Medico')">✍️ Firma Touch</button>
+                                </div>
+                                <div style="flex:1; min-width:180px; background:#f0f9ff; border:1px solid #bae6fd; padding:15px; border-radius:8px; text-align:center;">
+                                    <strong style="color:#0369a1; font-size:1.1em;">Infermiere</strong><br>
+                                    <div id="paiFirmaInfStatus" style="font-size:0.9em; color:var(--text-light); margin:10px 0;">⏳ In attesa</div>
+                                    <button id="btnFirmaInfermiere" class="btn-primary restrict-oss" style="width:100%; background:#0284c7;" onclick="window.firmaPAI('Infermiere')">✍️ Firma Touch</button>
+                                </div>
+                                <div style="flex:1; min-width:180px; background:#fffbeb; border:1px solid #fde68a; padding:15px; border-radius:8px; text-align:center;">
+                                    <strong style="color:#b45309; font-size:1.1em;">O.S.S.</strong><br>
+                                    <div id="paiFirmaOssStatus" style="font-size:0.9em; color:var(--text-light); margin:10px 0;">⏳ In attesa</div>
+                                    <button id="btnFirmaOSS" class="btn-primary restrict-oss" style="width:100%; background:#d97706;" onclick="window.firmaPAI('OSS')">✍️ Firma Touch</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="restrict-oss" style="display:flex; gap:10px; margin-top:20px;"><button class="btn-success" style="padding:12px 25px; font-size:1.1em;" onclick="window.saveClinicalData()">💾 Salva Testi PAI</button></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. DIARI -->
+            <div id="ws-diari" class="workspace">
+                <div class="card"><div class="form-group"><label>Seleziona Paziente per Diari</label><select id="diariGuestSelect" onchange="window.handlePatientSelect('diariGuestSelect')"><option value="" disabled selected>Scegli...</option></select></div></div>
+                <div id="diariContent" style="display:none; display:flex; gap:20px; flex-wrap:wrap;">
+                    <div style="flex:1; min-width:300px;">
+                        <div class="card req-medico" style="border-top:4px solid #16a34a;">
+                            <div class="card-header"><h3 style="color:#16a34a;">👨‍⚕️ Scrivi Nota Medica</h3></div>
+                            <textarea id="notaMedicaText" rows="4" placeholder="Esame obiettivo..."></textarea>
+                            <button class="btn-success" style="margin-top:10px; width:100%;" onclick="window.addDiario('Medico')">💾 Registra Nota</button>
+                        </div>
+                        <div class="card"><div class="card-header"><h3 style="color:#15803d;">Storico Medico</h3></div><div id="diariMediciList" style="display:flex; flex-direction:column; gap:10px;"></div></div>
+                    </div>
+                    <div style="flex:1; min-width:300px;">
+                        <div class="card req-infermiere" style="border-top:4px solid #0284c7;">
+                            <div class="card-header"><h3 style="color:#0284c7;">💉 Scrivi Nota Infermieristica</h3></div>
+                            <textarea id="notaInfText" rows="4" placeholder="Decorso..."></textarea>
+                            <button class="btn-primary" style="margin-top:10px; width:100%; background:#0284c7;" onclick="window.addDiario('Infermiere')">💾 Registra Nota</button>
+                        </div>
+                        <div class="card"><div class="card-header"><h3 style="color:#0369a1;">Storico Infermieristico</h3></div><div id="diariInfList" style="display:flex; flex-direction:column; gap:10px;"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. CONSENSI -->
+            <div id="ws-consensi" class="workspace">
+                <div class="card"><div class="form-group"><label>Seleziona Ospite</label><select id="consensiGuestSelect" onchange="window.selectPatientGlobal(this.value)"><option value="" disabled selected>Scegli...</option></select></div></div>
+                <div id="consensiArea" class="card" style="display:none; border-top:4px solid #4f46e5;">
+                    <div class="card-header"><h3 style="color:#4f46e5;">Modulistica e Consensi</h3></div>
+                    <div style="display:flex; flex-direction:column; gap:15px; background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #cbd5e1;">
+                        <label style="display:flex; align-items:center; gap:15px; font-size:1.1em;"><input type="checkbox" id="consPrivacy" style="transform:scale(1.5);"> Acconsento al trattamento dati sanitari (GDPR)</label>
+                        <label style="display:flex; align-items:center; gap:15px; font-size:1.1em;"><input type="checkbox" id="consInfo" style="transform:scale(1.5);"> Consenso Informato alle Cure (L. 219/2017)</label>
+                        <div style="margin-top:20px; border-top:2px dashed #cbd5e1; padding-top:20px; text-align:center;">
+                            <strong style="color:var(--success-color); font-size:1.2em;">Firma Elettronica Familiare/AdS</strong>
+                            <div id="moduloSignaturePreview" style="margin:15px auto; height:100px; width:100%; max-width:300px; background:#fff; border:2px dashed #94a3b8; border-radius:6px; display:flex; align-items:center; justify-content:center;">Nessuna firma</div>
+                            <button id="btnAvviaFirmaModulo" class="btn-success" style="padding:12px 30px; font-size:1.1em;" onclick="window.avviaFirmaConsensi()">✍️ Apri Pad di Firma</button>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-top:20px;"><button class="btn-primary" style="width:100%; padding:15px; font-size:1.1em; background:#4f46e5;" onclick="window.salvaConsensi()">💾 Salva Modulo e Firme</button></div>
+                </div>
+            </div>
+
+            <!-- 7. QUALITÀ E ACCREDITAMENTO (CON FIRMA NC TOUCH) -->
+            <div id="ws-qualita" class="workspace">
+                <div class="card" style="border-top:4px solid var(--acc-color);">
+                    <div class="card-header"><h3 style="color:var(--acc-color);">🎖️ Qualità ISO 9001 & Accreditamento LIST 05</h3></div>
+                    <p style="color:var(--text-light); margin-bottom:20px; font-size:1.1em;">Gestione e monitoraggio delle Non Conformità (NC) con validazione elettronica della Direzione in mobilità.</p>
+                    
+                    <div style="background:#f8fafc; border:1px solid var(--border-color); padding:20px; border-radius:8px; margin-bottom:20px;">
+                        <h4 style="margin:0 0 15px 0; color:var(--primary-color); font-size:1.2em;">Inserimento Nuova Registrazione NC</h4>
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;">
+                            <div class="form-group" style="flex:1; margin:0;"><label>Tipologia Rilievo</label><select id="tabNcTipo"><option value="Reclamo Familiare">Reclamo Familiare</option><option value="NC Interna Assistenziale">NC Interna Assistenziale</option><option value="Guasto Strutturale">Guasto Strutturale</option></select></div>
+                            <div class="form-group" style="flex:1; margin:0;"><label>Data Rilevazione</label><input type="date" id="tabNcData"></div>
+                        </div>
+                        <div class="form-group"><label>Descrizione Dettagliata Problema</label><input type="text" id="tabNcDesc" placeholder="Es. Ritardo consegna fornitura..."></div>
+                        <button class="btn-primary" style="background:var(--acc-color); padding:12px 25px; font-size:1.1em;" onclick="window.addTabletNC()">Registra Segnalazione</button>
+                    </div>
+
+                    <h4 style="color:var(--text-main); font-size:1.2em; margin-bottom:10px;">Registro NC Aperti/Chiusi</h4>
+                    <div style="overflow-x:auto;">
+                        <table class="data-table" id="tabletNcTable">
+                            <thead><tr><th>Data</th><th>Tipo</th><th>Descrizione</th><th>Stato</th><th>Firma Dir./Archiviazione</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8. TERAPIA -->
+            <div id="ws-terapia" class="workspace">
+                <div class="card"><div class="form-group"><label>Seleziona Paziente per Terapia</label><select id="terapiaGuestSelect" onchange="window.handlePatientSelect('terapiaGuestSelect')"><option value="" disabled selected>Scegli...</option></select></div></div>
+                <div id="terapiaContent" style="display:none;" class="card" style="border-top:4px solid var(--terapia-color);">
+                    <div class="card-header"><h3 style="color:var(--terapia-color);">Prospetto Terapia Ordinaria (Mese Corrente)</h3></div>
+                    <div style="overflow-x:auto;"><table class="data-table" id="terapiaGridTable" style="text-align:center;"><thead><tr id="terapiaGridHead"></tr></thead><tbody></tbody></table></div>
+                    <div id="terapiaFirmaGlobaleStatus" style="margin-top:20px; padding:15px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; text-align:center;"></div>
+                    <button id="btnFirmaTerapiaPiano" class="btn-success only-medico" style="width:100%; margin-top:10px; padding:15px; font-size:1.1em;" onclick="window.firmaTerapiaPiano()">⚕️ Valida e Firma Piano Mensile (Tablet)</button>
+                </div>
+            </div>
+
+            <!-- 9. CONTENZIONI -->
+            <div id="ws-contenzioni" class="workspace">
+                <div class="card restrict-oss" style="border-top:4px solid var(--error-color);">
+                    <div class="card-header"><h3 style="color:var(--error-color);">Prescrivi Contenzione Fisica</h3></div>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; background:#fef2f2; border:1px solid #fca5a5; padding:15px; margin-bottom:15px; border-radius:8px;">
+                        <div class="form-group" style="flex:1.5; margin:0;"><label>Ospite</label><select id="contOspite" onchange="window.selectPatientGlobal(this.value)"><option value="" disabled selected>Scegli...</option></select></div>
+                        <div class="form-group" style="flex:1; margin:0;"><label>Presidio</label><select id="contTipo"><option value="Spondine letto">Spondine a letto</option><option value="Cintura pelvica">Cintura pelvica</option></select></div>
+                        <div class="form-group" style="flex:2; margin:0;"><label>Motivazione</label><input type="text" id="contMotivo" placeholder="Rischio caduta..."></div>
+                        <div style="display:flex; align-items:flex-end;"><button class="btn-danger" style="padding:10px 20px;" onclick="window.addContenzione()">🔒 Prescrivi</button></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3>Registro Contenzioni Attive</h3></div>
+                    <div style="overflow-x:auto;"><table class="data-table" id="contenzioniTable"><thead><tr><th>Ospite</th><th>Presidio</th><th>Motivo</th><th>Firme Med/Inf (Touch)</th><th>Stato</th></tr></thead><tbody></tbody></table></div>
+                </div>
+            </div>
+
+            <!-- 10. RISCHIO CLINICO -->
+            <div id="ws-rischio" class="workspace">
+                <div class="card" style="border-top:4px solid #ca8a04;">
+                    <div class="card-header"><h3 style="color:#ca8a04;">Incident Reporting</h3></div>
+                    <div style="display:flex; gap:15px; flex-wrap:wrap; background:#fefce8; padding:20px; border:1px solid #fef08a; border-radius:8px;">
+                        <div class="form-group" style="flex:1; margin:0;"><label>Tipo Evento</label><select id="newRischioTipo"><option value="Caduta Accidentale">Caduta Accidentale</option><option value="Errore Terapia">Errore Terapia</option><option value="Fuga">Fuga</option><option value="Altro">Altro</option></select></div>
+                        <div class="form-group" style="flex:2; margin:0;"><label>Dinamica e Dettagli</label><input type="text" id="newRischioDinamica" placeholder="Descrivi l'evento..."></div>
+                        <div style="display:flex; align-items:flex-end;"><button class="btn-warning" style="color:white; padding:12px 25px;" onclick="window.addTabletRischio()">⚠️ Segnala Evento</button></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 11. AGENDA CUP -->
+            <div id="ws-appuntamenti" class="workspace">
+                <div class="card">
+                    <div class="card-header"><h3>Agenda Appuntamenti CUP</h3></div>
+                    <div style="overflow-x:auto;"><table class="data-table" id="appointmentsTable"><thead><tr><th>Data/Ora</th><th>Ospite</th><th>Esame / Visita</th><th>Trasporto</th></tr></thead><tbody></tbody></table></div>
+                </div>
+            </div>
+
+            <!-- 12. CONSEGNE REPARTO -->
+            <div id="ws-consegne" class="workspace">
+                <div class="card" style="border-top:4px solid #4f46e5;">
+                    <div class="card-header"><h3 style="color:#4f46e5;">📖 Consegne di Reparto</h3></div>
+                    <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                        <div style="flex:1; min-width:300px;">
+                            <h4 style="color:#0284c7;">Consegne Infermieristiche</h4>
+                            <div class="inf-edit-area" style="margin-bottom:15px; background:#f0f9ff; padding:15px; border-radius:8px; border:1px solid #bae6fd;"><textarea id="newConsegnaInfText" rows="3" style="width:100%;"></textarea><button class="btn-primary" style="margin-top:10px; width:100%; background:#0284c7;" onclick="window.addConsegna('inf')">Pubblica</button></div>
+                            <div id="consegneInfList" style="display:flex; flex-direction:column; gap:10px;"></div>
+                        </div>
+                        <div style="flex:1; min-width:300px;">
+                            <h4 style="color:#d97706;">Consegne O.S.S.</h4>
+                            <div class="oss-edit-area" style="margin-bottom:15px; background:#fffbeb; padding:15px; border-radius:8px; border:1px solid #fde68a;"><textarea id="newConsegnaOssText" rows="3" style="width:100%;"></textarea><button class="btn-warning" style="margin-top:10px; width:100%; color:white;" onclick="window.addConsegna('oss')">Pubblica</button></div>
+                            <div id="consegneOssList" style="display:flex; flex-direction:column; gap:10px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 13. STORICO -->
+            <div id="ws-storico" class="workspace">
+                <div class="card"><div class="card-header"><h3>Archivio Storico (Dimessi/Deceduti)</h3></div><div id="storicoGrid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:15px;"></div></div>
+            </div>
+
+        </div>
+    </div>
+<!-- LOGICA JAVASCRIPT & FIREBASE UNIFICATA PER TABLET -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // CONFIGURAZIONE FIREBASE
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
+            authDomain: "gestione-visite-b445b.firebaseapp.com", 
+            projectId: "gestione-visite-b445b", 
+            storageBucket: "gestione-visite-b445b.firebasestorage.app", 
+            messagingSenderId: "720937824810", 
+            appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const appCheck = initializeAppCheck(app, { provider: new ReCaptchaEnterpriseProvider('6LdSQ5wtAAAAAKxlPkk0UBsfJK5gzJdn_NLJm6U3'), isTokenAutoRefreshEnabled: true });
+        const db = getFirestore(app);
+
+        // VARIABILI GLOBALI
+        window.dbOperatori = []; window.dbOspiti = []; window.dbClinica = {}; 
+        window.dbNc = []; window.dbContenzioni = []; window.dbConsegne = []; window.dbRischio = []; window.dbCup = [];
+        
+        window.activeOperator = ""; window.activeOperatorRole = "user"; window.activeOperatorQualifica = ""; 
+        window.selectedLoginOperator = null; window.enteredPin = "";
+        window.globalSelectedPatient = ""; window.activeSigCallback = null; window.activeSignatureCanvasId = null;
+        let curTerDate = new Date(); let curTerMonth = curTerDate.getMonth(); let curTerYear = curTerDate.getFullYear();
+        const monthNames = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
+
+        // UTILITY
+        window.getTimestamp = () => { const n=new Date(); return `${n.toLocaleDateString('it-IT')} alle ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}`; };
+        window.getTodayString = () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; };
+        window.formatDateSafe = (d) => { if (!d) return '-'; if (d.includes('-')) return d.split('-').reverse().join('/'); return d; };
+        window.getInitials = (n) => { if(!n) return ""; return n.replace(/Inf\.|Dr\.|OSS/gi,'').trim().split(' ').map(x=>x[0].toUpperCase()).join('.')+'.'; };
+        window.showToast = (m) => { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='toast'; t.innerText=m; c.appendChild(t); setTimeout(()=>t.classList.add('show'),10); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},3000); };
+        
+        window.checkOssRestriction = () => { if (window.activeOperatorQualifica === 'OSS') { window.showToast("🚫 Azione non consentita per O.S.S."); return true; } return false; };
+        window.isMedicoOrAdmin = () => ['Medico', 'Direttore Sanitario'].includes(window.activeOperatorQualifica) || window.activeOperatorRole === 'admin';
+
+        // --- SISTEMA DI LOGIN E PIN PAD ---
+        window.loadOperatorsForLogin = () => {
+            const container = document.getElementById('profiles-container');
+            const opList = document.getElementById('operatorList');
+            if(!container) return;
+            container.innerHTML = '';
+            if(opList) opList.innerHTML = '';
+
+            let list = [...window.dbOperatori];
+            if(!list.some(o => o.name === 'Admin')) list.push({id:"admin-fallback", name: 'Admin', pin: '12345', role: 'admin', qualifica: 'Direttore Sanitario'});
+
+            list.forEach(op => {
+                let card = document.createElement('div');
+                card.className = 'profile-card';
+                card.innerHTML = `<div class="profile-avatar">👤</div><div class="profile-name">${op.name.split(' ')[0]}</div><div class="profile-role">${op.qualifica || op.role}</div>`;
+                card.onclick = () => window.selectOperatorForPin(op);
+                container.appendChild(card);
+
+                if(opList && op.id !== 'admin-fallback') {
+                    opList.innerHTML += `<li style="padding:10px; background:#fff; border:1px solid #cbd5e1; display:flex; justify-content:space-between; align-items:center; border-radius:6px;"><div><strong>${op.name}</strong><br><small>${op.qualifica} - PIN: ${op.pin}</small></div><button class="btn-danger" style="padding:6px 12px;" onclick="window.removeOperator('${op.id}')">X</button></li>`;
+                }
+            });
+        };
+
+        window.addOperator = async () => { const n=document.getElementById('newOpInput').value; const p=document.getElementById('newOpPin').value; if(!n||!p) return window.showToast("⚠️ Nome e PIN obbligatori"); await addDoc(collection(db,"operatori"),{name:n, pin:p, role:document.getElementById('newOpRole').value, qualifica:document.getElementById('newOpQualifica').value}); document.getElementById('newOpInput').value=''; document.getElementById('newOpPin').value=''; window.showToast("✅ Operatore aggiunto"); };
+        window.removeOperator = async (id) => { if(confirm("Eliminare operatore?")) await deleteDoc(doc(db,"operatori",id)); };
+
+        window.selectOperatorForPin = (op) => {
+            window.selectedLoginOperator = op;
+            window.enteredPin = "";
+            document.getElementById('profiles-container').style.display = 'none';
+            document.getElementById('pin-pad-area').style.display = 'flex';
+            document.getElementById('pin-welcome').innerText = `PIN per ${op.name}`;
+            document.getElementById('pin-display').innerText = "";
+        };
+
+        window.resetPinLogin = () => {
+            window.selectedLoginOperator = null;
+            window.enteredPin = "";
+            document.getElementById('pin-pad-area').style.display = 'none';
+            document.getElementById('profiles-container').style.display = 'grid';
+        };
+
+        window.addPin = (digit) => {
+            if(window.enteredPin.length < 6) {
+                window.enteredPin += digit;
+                document.getElementById('pin-display').innerText = "•".repeat(window.enteredPin.length);
+            }
+        };
+
+        window.deleteLastPinDigit = () => {
+            window.enteredPin = window.enteredPin.slice(0, -1);
+            document.getElementById('pin-display').innerText = "•".repeat(window.enteredPin.length);
+        };
+
+        window.submitPin = () => {
+            if(!window.selectedLoginOperator) return;
+            if(window.enteredPin === window.selectedLoginOperator.pin) {
+                window.activeOperator = window.selectedLoginOperator.name;
+                window.activeOperatorRole = window.selectedLoginOperator.role || 'user';
+                window.activeOperatorQualifica = window.selectedLoginOperator.qualifica || 'Operatore';
+                
+                sessionStorage.setItem("activeOperator", window.activeOperator);
+                sessionStorage.setItem("activeRole", window.activeOperatorRole);
+                sessionStorage.setItem("activeQualifica", window.activeOperatorQualifica);
+
+                document.getElementById('currentOpBadge').innerText = window.activeOperator;
+                document.getElementById('currentOpRole').innerText = window.activeOperatorQualifica;
+                
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('tablet-header').style.display = 'flex';
+                document.getElementById('home-menu').style.display = 'grid';
+                
+                document.body.setAttribute('data-qualifica', window.activeOperatorQualifica);
+                if(window.isMedicoOrAdmin()) document.body.setAttribute('data-med-access', 'true');
+                if(window.activeOperatorRole === 'admin') document.body.setAttribute('data-role', 'admin');
+
+                window.showToast("✅ Accesso effettuato");
+                window.loadGuestsAndStats();
+            } else {
+                window.showToast("❌ PIN Errato");
+                window.enteredPin = "";
+                document.getElementById('pin-display').innerText = "";
+            }
+        };
+
+        window.logout = () => { sessionStorage.clear(); window.location.reload(); };
+
+        // --- NAVIGAZIONE ---
+        window.switchTab = (wsId, title) => {
+            document.getElementById('home-menu').style.display = 'none';
+            document.getElementById('appScreen').style.display = 'flex';
+            document.getElementById('backToHomeBtn').style.display = 'block';
+            document.getElementById('header-title').innerText = title;
+
+            document.querySelectorAll('.workspace').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById('ws-' + wsId);
+            if(target) target.classList.add('active');
+
+            if(wsId === 'qualita') window.renderTabletNC();
+            if(wsId === 'contenzioni') window.loadContenzioni();
+            if(wsId === 'consegne') window.loadConsegne();
+            if(wsId === 'rischio') window.loadRischio();
+            if(wsId === 'appuntamenti') window.loadAppointments();
+        };
+
+        window.goHome = () => {
+            document.getElementById('appScreen').style.display = 'none';
+            document.getElementById('backToHomeBtn').style.display = 'none';
+            document.getElementById('header-title').innerText = "Home Menu";
+            document.getElementById('home-menu').style.display = 'grid';
+        };
+
+        // --- MOTORE FIRMA DIGITALE TOUCH (UNIFICATO) ---
+        let isDrawing = false;
+        
+        window.attachSignatureEvents = (canvasId) => {
+            const canvas = document.getElementById(canvasId);
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            const getCoords = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+            };
+
+            const startDraw = (e) => { isDrawing = true; let p = getCoords(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); if(e.preventDefault) e.preventDefault(); };
+            const draw = (e) => { if (!isDrawing) return; let p = getCoords(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2.5; ctx.stroke(); if(e.preventDefault) e.preventDefault(); };
+            const stopDraw = () => { isDrawing = false; };
+
+            canvas.addEventListener('mousedown', startDraw);
+            canvas.addEventListener('mousemove', draw);
+            window.addEventListener('mouseup', stopDraw);
+
+            canvas.addEventListener('touchstart', startDraw, {passive: false});
+            canvas.addEventListener('touchmove', draw, {passive: false});
+            window.addEventListener('touchend', stopDraw);
+        };
+
+        // Modale Standard (PAI, Consensi, Contenzioni)
+        window.openSignatureModal = (desc, callback) => {
+            window.activeSignatureCanvasId = 'modalSignaturePad';
+            document.getElementById('sig-action-desc').innerText = desc;
+            document.getElementById('signatureModal').style.display = 'flex';
+            window.activeSigCallback = callback;
+            window.clearModalSignature();
+        };
+
+        window.clearModalSignature = () => {
+            const canvas = document.getElementById('modalSignaturePad');
+            if(canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+        };
+
+        window.closeSignatureModal = () => {
+            document.getElementById('signatureModal').style.display = 'none';
+            document.getElementById('signature-modal').style.display = 'none'; // Nasconde anche l'altro se aperto
+            window.activeSigCallback = null;
+        };
+
+        window.confirmModalSignature = () => {
+            const canvas = document.getElementById('modalSignaturePad');
+            const blank = document.createElement('canvas'); blank.width = canvas.width; blank.height = canvas.height;
+            if (canvas.toDataURL() === blank.toDataURL()) return window.showToast("⚠️ Devi firmare per proseguire.");
+            const b64 = canvas.toDataURL('image/png');
+            document.getElementById('signatureModal').style.display = 'none';
+            if(window.activeSigCallback) window.activeSigCallback(b64);
+        };
+
+        // Modale Specifico per Qualità (NC)
+        window.openQualitySignatureModal = (desc, callback) => {
+            window.activeSignatureCanvasId = 'sig-canvas';
+            document.getElementById('sig-action-desc').innerText = desc;
+            document.getElementById('signature-modal').style.display = 'flex';
+            window.activeSigCallback = callback;
+            window.clearSignatureCanvas();
+        };
+
+        window.clearSignatureCanvas = () => {
+            const canvas = document.getElementById('sig-canvas');
+            if(canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+        };
+
+        window.saveSignatureCanvas = () => {
+            const canvas = document.getElementById('sig-canvas');
+            const b64 = canvas.toDataURL('image/png');
+            document.getElementById('signature-modal').style.display = 'none';
+            if(window.activeSigCallback) window.activeSigCallback(b64);
+        };
+
+        // --- GESTIONE OSPITI E STATISTICHE DASHBOARD ---
+        window.loadGuestsAndStats = () => {
+            let att = window.dbOspiti.filter(g => !g.decesso && !g.dimissione);
+            let arc = window.dbOspiti.filter(g => g.decesso || g.dimissione);
+            
+            if(document.getElementById('dash-guests-count')) document.getElementById('dash-guests-count').innerText = att.length;
+            
+            // Popola Selects
+            ['vitaliGuestSelect', 'clinicalGuestSelect', 'diariGuestSelect', 'consensiGuestSelect', 'terapiaGuestSelect', 'contOspite'].forEach(id => {
+                const s = document.getElementById(id);
+                if(s) {
+                    let cv = s.value;
+                    s.innerHTML = '<option value="" disabled selected>Scegli...</option>';
+                    let o1 = document.createElement('optgroup'); o1.label = "Attivi";
+                    att.forEach(g => o1.innerHTML += `<option value="${g.name}">${g.name}</option>`);
+                    s.appendChild(o1);
+                    if(cv) s.value = cv;
+                }
+            });
+
+            // Popola Griglie
+            const gg = document.getElementById('guestGrid');
+            if(gg) {
+                gg.innerHTML = '';
+                att.forEach(g => {
+                    let av = g.photo ? `<img src="${g.photo}" style="width:100%;height:100%;object-fit:cover;">` : `👤`;
+                    gg.innerHTML += `<div class="guest-card" onclick="window.selectPatientGlobal('${g.name}')"><div class="guest-card-top"><div class="guest-avatar">${av}</div><div><h4 style="margin:0; font-size:1.1em;">${g.name}</h4><small>Stanza: ${g.room||'-'}</small></div></div></div>`;
+                });
+            }
+
+            const sg = document.getElementById('storicoGrid');
+            if(sg) {
+                sg.innerHTML = '';
+                arc.forEach(g => {
+                    sg.innerHTML += `<div class="guest-card"><div class="guest-card-top"><div class="guest-avatar">👤</div><div><h4 style="margin:0;">${g.name}</h4><small>${g.decesso?'Decesso':'Dimissione'}</small></div></div></div>`;
+                });
+            }
+
+            window.renderSidebarPatients();
+            window.loadAlerts();
+        };
+
+        window.renderSidebarPatients = () => {
+            const list = document.getElementById('sidebarPatientList');
+            const search = (document.getElementById('sidebarSearch')?.value || '').toLowerCase();
+            if(!list) return;
+            list.innerHTML = '';
+            window.dbOspiti.filter(g => !g.decesso && !g.dimissione).forEach(g => {
+                if(search && !g.name.toLowerCase().includes(search)) return;
+                list.innerHTML += `<div class="sidebar-item ${g.name===window.globalSelectedPatient?'active':''}" onclick="window.selectPatientGlobal('${g.name}')"><div class="sidebar-avatar">👤</div><div style="flex-grow:1; overflow:hidden; text-overflow:ellipsis;">${g.name}</div></div>`;
+            });
+        };
+
+        window.selectPatientGlobal = (n) => {
+            window.globalSelectedPatient = n;
+            ['vitaliGuestSelect', 'clinicalGuestSelect', 'diariGuestSelect', 'consensiGuestSelect', 'terapiaGuestSelect', 'contOspite'].forEach(id => {
+                const s = document.getElementById(id);
+                if(s && [...s.options].some(o=>o.value===n)) s.value = n;
+            });
+            window.renderSidebarPatients();
+            window.handlePatientSelect('clinicalGuestSelect'); // Aggiorna schermate
+            window.showToast(`👤 Selezionato: ${n}`);
+        };
+
+        window.handlePatientSelect = (id) => {
+            const n = document.getElementById(id)?.value; if(!n) return;
+            ['clinicalContent', 'diariContent', 'consensiArea', 'terapiaContent', 'vitaliContent'].forEach(i => { if(document.getElementById(i)) document.getElementById(i).style.display = 'block'; });
+            
+            let d = window.dbClinica[n] || {};
+            
+            if(document.getElementById('chkDisfagia')) document.getElementById('chkDisfagia').checked = d.disfagia || false;
+            if(document.getElementById('selInfezione')) document.getElementById('selInfezione').value = d.infezione || "";
+            
+            ['chkGen','chkPiaghe','paiDataStesura','paiDataRevisione','paiMedico','paiInfermieristico','paiAssistenziale'].forEach(fid=>{if(document.getElementById(fid)) document.getElementById(fid).value=d[fid]||"";});
+            
+            ['Med', 'Inf', 'Oss'].forEach(ruolo => { 
+                let idPref = 'paiFirma' + ruolo; 
+                let btnId = 'btnFirma' + (ruolo === 'Med' ? 'Medico' : (ruolo === 'Inf' ? 'Infermiere' : 'OSS'));
+                if (document.getElementById(idPref + 'Status')) { 
+                    let val = d[idPref + 'Date'] || ""; let b64 = d[idPref + 'B64'] || "";
+                    if (b64) { document.getElementById(idPref + 'Status').innerHTML = `✅ Firmato:<br><strong>${val}</strong><br><img src="${b64}" style="max-height:50px; background:#fff; margin-top:5px; border-radius:4px;">`; document.getElementById(btnId).style.display = 'none'; } 
+                    else { document.getElementById(idPref + 'Status').innerHTML = `⏳ In attesa`; document.getElementById(btnId).style.display = 'block'; }
+                } 
+            });
+
+            const g = window.dbOspiti.find(x => x.name === n);
+            if(g && g.consensi) {
+                document.getElementById('consPrivacy').checked = !!g.consensi.privacy;
+                document.getElementById('consInfo').checked = !!g.consensi.consensoInformato;
+                if(g.consensi.firmaB64) {
+                    document.getElementById('moduloSignaturePreview').innerHTML = `<img src="${g.consensi.firmaB64}" style="max-height:80px;">`;
+                    document.getElementById('btnAvviaFirmaModulo').style.display = 'none';
+                } else {
+                    document.getElementById('moduloSignaturePreview').innerHTML = `Nessuna firma`;
+                    document.getElementById('btnAvviaFirmaModulo').style.display = 'block';
+                }
+            }
+
+            window.renderVitals(n, d);
+            window.renderAssistenza(n, d);
+            window.renderDiario(n, d);
+            window.renderTerapiaTable(n, d);
+            window.aggiornaBannerPAI();
+        };
+
+        // --- SALVATAGGI CLINICI ---
+        window.saveClinicalData = async () => {
+            if(window.checkOssRestriction()) return;
+            const n = document.getElementById('clinicalGuestSelect').value;
+            if(!n) return window.showToast("⚠️ Seleziona paziente");
+            let d = window.dbClinica[n] || {};
+            ['chkGen','chkPiaghe','paiDataStesura','paiDataRevisione','paiMedico','paiInfermieristico','paiAssistenziale'].forEach(id=>{if(document.getElementById(id)) d[id]=document.getElementById(id).value;});
+            d.disfagia = document.getElementById('chkDisfagia') ? document.getElementById('chkDisfagia').checked : false; 
+            d.infezione = document.getElementById('selInfezione') ? document.getElementById('selInfezione').value : ""; 
+            await setDoc(doc(db, "cartelle_cliniche", n), d);
+            window.showToast("✅ Dati clinici salvati");
+        };
+
+        window.firmaPAI = async (ruoloTarget) => {
+            let roleOk = false; let idPrefix = '';
+            if (ruoloTarget === 'Medico') { if (window.isMedicoOrAdmin()) roleOk = true; idPrefix = 'paiFirmaMed'; } 
+            else if (ruoloTarget === 'Infermiere') { if (window.activeOperatorQualifica === 'Infermiere' || window.activeOperatorRole === 'admin') roleOk = true; idPrefix = 'paiFirmaInf'; } 
+            else if (ruoloTarget === 'OSS') { if (window.activeOperatorQualifica === 'OSS' || window.activeOperatorRole === 'admin') roleOk = true; idPrefix = 'paiFirmaOss'; }
+
+            if (!roleOk) return window.showToast("🚫 Solo la qualifica corretta può firmare.");
+
+            window.openSignatureModal(`Firma P.A.I. - ${ruoloTarget}`, async (b64) => {
+                let n = document.getElementById('clinicalGuestSelect').value;
+                if(n) {
+                    let d = window.dbClinica[n] || {};
+                    d[idPrefix + 'Date'] = `${window.activeOperator} il ${window.getTimestamp()}`;
+                    d[idPrefix + 'B64'] = b64;
+                    await setDoc(doc(db, "cartelle_cliniche", n), d);
+                    window.showToast(`✅ Firma ${ruoloTarget} bloccata!`);
+                    window.handlePatientSelect('clinicalGuestSelect');
+                }
+            });
+        };
+
+        window.archiviaNuovoPAI = async () => { 
+            if(window.checkOssRestriction()) return; 
+            const n=document.getElementById('clinicalGuestSelect').value; if(!n) return; 
+            let st=document.getElementById('paiDataStesura').value; if(!st) return window.showToast("Manca data stesura"); 
+            if(!confirm("Archiviare PAI nello storico?")) return; 
+            let d=window.dbClinica[n]||{}; 
+            if(!d.paiStorico) d.paiStorico=[]; 
+            d.paiStorico.unshift({dataStesura:st, medico:document.getElementById('paiMedico').value}); 
+            await setDoc(doc(db,"cartelle_cliniche",n),d); window.showToast("✅ PAI Archiviato"); 
+        };
+
+        window.calcProssimaRevisione = () => { let s=document.getElementById('paiDataStesura').value; if(s){ let [y,m,d] = s.split('-'); let dt = new Date(y, m-1, d); dt.setMonth(dt.getMonth()+3); document.getElementById('paiDataRevisione').value=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`; window.aggiornaBannerPAI(); } };
+        window.aggiornaBannerPAI = () => { 
+            let r=document.getElementById('paiDataRevisione')?.value; let b=document.getElementById('paiStatusBanner'); 
+            if(b && r && r.trim() !== ""){ 
+                let [y,m,d] = r.split('-'); let rDate = new Date(y, m-1, d); let diff=Math.ceil((rDate - new Date().setHours(0,0,0,0))/86400000); 
+                if(diff<0) b.innerHTML=`<div style="background:#fef2f2;color:#b91c1c;padding:15px; border-radius:8px; font-weight:bold;">🚨 PAI SCADUTO IL ${rDate.toLocaleDateString()}</div>`; 
+                else b.innerHTML=`<div style="background:#f0fdf4;color:#15803d;padding:15px; border-radius:8px; font-weight:bold;">✅ PAI Valido (Scade il: ${rDate.toLocaleDateString()})</div>`; 
+            } else if (b) b.innerHTML = '';
+        };
+
+        window.addRapVitals = async () => {
+            const n = document.getElementById('vitaliGuestSelect').value;
+            if(!n) return window.showToast("⚠️ Seleziona prima un paziente");
+            const pa = document.getElementById('rap-vitPA').value; const fc = document.getElementById('rap-vitFC').value;
+            const spo2 = document.getElementById('rap-vitSPO2').value; const tc = document.getElementById('rap-vitTC').value;
+            const gli = document.getElementById('rap-vitGLI').value; const nrs = document.getElementById('rap-vitNRS').value;
+            if(!pa && !fc && !spo2 && !tc && !gli && !nrs) return window.showToast("⚠️ Inserisci almeno un parametro");
+
+            let d = window.dbClinica[n] || {};
+            if(!d.vitals) d.vitals = [];
+            d.vitals.unshift({ date: window.getTimestamp(), op: window.activeOperator, pa: pa, fc: fc, spo2: spo2, tc: tc, gli: gli, nrs: nrs });
+            await setDoc(doc(db, "cartelle_cliniche", n), d);
+            window.showToast("✅ Parametri vitali salvati");
+            ['rap-vitPA', 'rap-vitFC', 'rap-vitSPO2', 'rap-vitTC', 'rap-vitGLI', 'rap-vitNRS'].forEach(id => document.getElementById(id).value = '');
+            window.renderVitals(n, d);
+        };
+
+        window.renderVitals = (n, d) => {
+            const tb = document.querySelector('#rapVitalsTable tbody');
+            if(tb) {
+                tb.innerHTML = '';
+                if(d.vitals) {
+                    d.vitals.slice(0,10).forEach(v => {
+                        tb.innerHTML += `<tr><td>${v.date}</td><td>${window.getInitials(v.op)}</td><td><strong>${v.pa||'-'}</strong></td><td><strong>${v.fc||'-'}</strong></td><td>${v.spo2||'-'}</td><td>${v.tc||'-'}</td><td>${v.gli||'-'}</td><td>${v.nrs||'-'}</td></tr>`;
+                    });
+                }
+            }
+        };
+
+        window.addAssistenza = async () => {
+            const n = document.getElementById('vitaliGuestSelect').value;
+            if(!n) return window.showToast("⚠️ Seleziona Ospite");
+            const alvo = document.getElementById('rap-assAlvo').value; const diuresi = document.getElementById('rap-assDiuresi').value;
+            const idrat = document.getElementById('rap-assIdratazione').value; const igiene = document.getElementById('rap-assIgiene').value;
+            if(!alvo && !diuresi && !idrat && !igiene) return window.showToast("⚠️ Compila almeno un parametro");
+            let d = window.dbClinica[n] || {};
+            if(!d.assistenza) d.assistenza = [];
+            d.assistenza.unshift({ date: window.getTimestamp(), op: window.activeOperator, alvo: alvo, diuresi: diuresi, idratazione: idrat, igiene: igiene });
+            await setDoc(doc(db, "cartelle_cliniche", n), d);
+            window.showToast("✅ Diario OSS Registrato");
+            ['rap-assAlvo', 'rap-assDiuresi', 'rap-assIdratazione', 'rap-assIgiene'].forEach(id => document.getElementById(id).value = '');
+            window.renderAssistenza(n, d);
+        };
+
+        window.renderAssistenza = (n, d) => {
+            const tb = document.querySelector('#rapAssistenzaTable tbody');
+            if(tb) {
+                tb.innerHTML = '';
+                if(d.assistenza) d.assistenza.slice(0,10).forEach(a => { tb.innerHTML += `<tr><td>${a.date}</td><td><strong>${window.getInitials(a.op)}</strong></td><td>${a.alvo||'-'}</td><td>${a.diuresi||'-'}</td><td>${a.idratazione ? a.idratazione + ' ml' : '-'}</td><td>${a.igiene||'-'}</td></tr>`; });
+            }
+        };
+
+        window.addDiario = async (tipo) => {
+            const n = document.getElementById('diariGuestSelect').value;
+            if(!n) return window.showToast("⚠️ Seleziona paziente");
+            let txtId = tipo === 'Medico' ? 'notaMedicaText' : 'notaInfText';
+            let testo = document.getElementById(txtId).value.trim();
+            if(!testo) return window.showToast("⚠️ Scrivi il testo della nota");
+            let d = window.dbClinica[n] || {};
+            if(!d.diarioClinico) d.diarioClinico = [];
+            d.diarioClinico.unshift({ data: window.getTimestamp(), op: window.activeOperator, ruolo: window.activeOperatorQualifica, tipo: tipo === 'Medico' ? 'Nota Medica' : 'Nota Infermieristica', testo: testo });
+            await setDoc(doc(db, "cartelle_cliniche", n), d);
+            document.getElementById(txtId).value = '';
+            window.showToast(`✅ Nota ${tipo} registrata`);
+            window.renderDiario(n, d);
+        };
+
+        window.renderDiario = (n, d) => {
+            const listMed = document.getElementById('diariMediciList'); const listInf = document.getElementById('diariInfList');
+            if(listMed) listMed.innerHTML = ''; if(listInf) listInf.innerHTML = '';
+            if(d.diarioClinico) {
+                d.diarioClinico.forEach(nota => {
+                    let html = `<div style="background:#fff; border:1px solid #cbd5e1; padding:15px; border-radius:8px;"><div style="border-bottom:1px solid #e2e8f0; padding-bottom:5px; margin-bottom:10px;"><strong style="color:var(--primary-color);">${nota.op}</strong><br><small>${nota.data}</small></div><div>${nota.testo}</div></div>`;
+                    if(nota.tipo === 'Nota Medica' && listMed) listMed.innerHTML += html;
+                    else if(nota.tipo === 'Nota Infermieristica' && listInf) listInf.innerHTML += html;
+                });
+            }
+        };
+
+        window.avviaFirmaConsensi = () => { 
+            window.openSignatureModal(`Consenso Informato / Privacy`, (sig) => { 
+                document.getElementById('moduloSignaturePreview').innerHTML = `<img src="${sig}" style="max-height:80px;">`; 
+            }); 
+        };
+
+        window.salvaConsensi = async () => {
+            const n = document.getElementById('consensiGuestSelect').value;
+            const g = window.dbOspiti.find(x => x.name === n);
+            if(!g) return window.showToast("⚠️ Seleziona ospite");
+            
+            let canvasImg = document.querySelector('#moduloSignaturePreview img');
+            let b64 = canvasImg ? canvasImg.src : null;
+
+            let c = { 
+                privacy: document.getElementById('consPrivacy').checked, 
+                consensoInformato: document.getElementById('consInfo').checked,
+                firmaB64: b64,
+                dataFirma: window.getTimestamp() 
+            };
+            await updateDoc(doc(db, "ospiti", g.id), { consensi: c });
+            window.showToast("✅ Consensi salvati");
+        };
+
+        // --- TERAPIA ---
+        window.renderTerapiaTable = (n, d) => { 
+            const th=document.getElementById('terapiaGridHead'); const tb=document.querySelector('#terapiaGridTable tbody'); if(!th||!tb) return; 
+            let dIM=new Date(curTerYear,curTerMonth+1,0).getDate(); let hh=`<th class="farmaco-col">Farmaco</th>`; for(let i=1;i<=dIM;i++) hh+=`<th>${i}</th>`; th.innerHTML=hh; tb.innerHTML=''; 
+            
+            if(document.getElementById('terapiaFirmaGlobaleStatus')) {
+                let monthKey = `${curTerYear}-${String(curTerMonth+1).padStart(2,'0')}`;
+                let firmaMese = d.terapiaFirmeMensili ? d.terapiaFirmeMensili[monthKey] : null;
+
+                if(firmaMese && firmaMese.op) {
+                    let fMImg = firmaMese.b64 ? `<br><img src="${firmaMese.b64}" style="max-height:40px; margin-top:10px;">` : "";
+                    document.getElementById('terapiaFirmaGlobaleStatus').innerHTML = `✅ Piano Validato per ${monthNames[curTerMonth]} ${curTerYear} da: <strong>${firmaMese.op}</strong> ${fMImg}`;
+                    document.getElementById('btnFirmaTerapiaPiano').style.display = 'none'; 
+                } else {
+                    document.getElementById('terapiaFirmaGlobaleStatus').innerHTML = `⏳ Piano non validato per ${monthNames[curTerMonth]} ${curTerYear}`;
+                    document.getElementById('btnFirmaTerapiaPiano').style.display = 'block';
+                }
+            }
+
+            if(!d.terapiaList||d.terapiaList.length===0){ tb.innerHTML=`<tr><td colspan="${dIM+1}">Nessuna terapia.</td></tr>`; return; } 
+            let tS=window.getTodayString(); let rows=""; 
+            d.terapiaList.forEach((t,i)=>{ 
+                let fC=`<strong>${t.farmaco}</strong><br><span style="color:var(--terapia-color);">${t.posologia||''}</span><br><small>🕒 ${t.orario||''}</small>`; rows+=`<tr><td class="farmaco-col">${fC}</td>`; 
+                let oA=(t.orario&&t.orario!=='Firma')?t.orario.split('-').map(s=>s.trim()):["Firma"]; 
+                for(let day=1;day<=dIM;day++){ 
+                    let dStr=`${curTerYear}-${String(curTerMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`; let cC=""; 
+                    oA.forEach(sl=>{ 
+                        let sig=t.signatures?(t.signatures[`${dStr}_${sl}`]||t.signatures[dStr]):null; 
+                        if(sig) cC+=`<div style="color:var(--success-color); font-weight:bold; font-size:10px;">${window.getInitials(sig.op)}</div>`; 
+                        else cC+=`<div style="background:#e2e8f0; border-radius:4px; font-size:9px; padding:2px; cursor:pointer;" onclick="window.signTerapia(${i},'${dStr}','${sl}')">${sl}</div>`; 
+                    }); rows+=`<td><div style="display:flex; flex-direction:column; gap:4px;">${cC}</div></td>`; 
+                } rows+=`</tr>`; 
+            }); 
+            tb.innerHTML=rows; 
+        };
+
+        window.signTerapia = async (i, dStr, slot) => { 
+            const n=document.getElementById('terapiaGuestSelect').value; let d=window.dbClinica[n]; let item=d.terapiaList[i]; 
+            if(!item.signatures) item.signatures={}; let sk=`${dStr}_${slot}`; 
+            if(window.activeOperatorQualifica!=='Direttore Sanitario'&&window.activeOperatorQualifica!=='Infermiere'&&window.activeOperatorRole!=='admin') return window.showToast("🚫 Solo Inf/Med"); 
+            if(dStr!==window.getTodayString()) return window.showToast("⚠️ Solo oggi"); 
+            item.signatures[sk]={op:window.activeOperator, time:new Date().toLocaleTimeString('it-IT')}; 
+            await setDoc(doc(db,"cartelle_cliniche",n),d); window.renderTerapiaTable(n,d); 
+        };
+
+        window.firmaTerapiaPiano = async () => {
+            if(!window.isMedicoOrAdmin()) return window.showToast("🚫 Solo Medico.");
+            const n = document.getElementById('terapiaGuestSelect').value; if(!n) return;
+            let d = window.dbClinica[n] || {}; if(!d.terapiaFirmeMensili) d.terapiaFirmeMensili = {};
+            let monthKey = `${curTerYear}-${String(curTerMonth+1).padStart(2,'0')}`;
+
+            window.openSignatureModal(`Validazione Terapia ${monthNames[curTerMonth]}`, async (b64) => {
+                d.terapiaFirmeMensili[monthKey] = { op: window.activeOperator, data: window.getTimestamp(), b64: b64 };
+                await setDoc(doc(db, "cartelle_cliniche", n), d);
+                window.renderTerapiaTable(n, d);
+                window.showToast(`✅ Piano Validato!`);
+            });
+        };
+
+        // --- QUALITÀ, NC E ACCREDITAMENTO ---
+        window.addTabletNC = async () => {
+            const t = document.getElementById('tabNcTipo').value;
+            const d = document.getElementById('tabNcData').value || window.getTodayString();
+            const desc = document.getElementById('tabNcDesc').value.trim();
+            if(!desc) return window.showToast("⚠️ Inserisci la descrizione della non conformità");
+            await addDoc(collection(db, "qualita_nc"), { tipo: t, data: d, desc: desc, ac: "Segnalazione Tablet", stato: "APERTA", op: window.activeOperator });
+            document.getElementById('tabNcDesc').value = '';
+            window.showToast("✅ NC Registrata");
+        };
+
+        window.renderTabletNC = () => {
+            const tb = document.querySelector('#tabletNcTable tbody');
+            if(!tb) return; tb.innerHTML = '';
+            if(window.dbNc.length === 0) return tb.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nessuna registrazione.</td></tr>';
+            window.dbNc.forEach(n => {
+                let st = n.stato === 'APERTA' ? '<span style="color:var(--warning-color); font-weight:bold;">APERTA</span>' : '<span style="color:var(--success-color); font-weight:bold;">CHIUSA</span>';
+                let btn = n.stato === 'APERTA' ? `<button class="btn-success" style="padding:6px 12px; font-size:0.9em;" onclick="window.chiudiTabletNC('${n.id}')">✍️ Archivia</button>` : `<img src="${n.firmaResp}" style="max-height:30px; background:#fff; border-radius:4px;">`;
+                tb.innerHTML += `<tr><td>${window.formatDateSafe(n.data)}</td><td>${n.tipo}</td><td>${n.desc}</td><td>${st}</td><td>${btn}</td></tr>`;
+            });
+        };
+
+        window.chiudiTabletNC = (id) => {
+            if(!window.isAdmin && window.activeOperatorQualifica !== 'Direttore Sanitario') return window.showToast("🚫 Solo Direzione può archiviare NC.");
+            window.openQualitySignatureModal("Firma per chiusura NC", async (b64) => {
+                await updateDoc(doc(db, "qualita_nc", id), { stato: "CHIUSA", dataChiusura: window.getTimestamp(), firmaResp: b64 });
+                window.showToast("✅ NC Archiviata!");
+            });
+        };
+
+        // --- CONTENZIONI, RISCHIO, CUP E CONSEGNE ---
+        window.addContenzione = async () => {
+            if(window.checkOssRestriction()) return;
+            const o = document.getElementById('contOspite').value; const t = document.getElementById('contTipo').value; const m = document.getElementById('contMotivo').value;
+            if(!o || !m) return window.showToast("⚠️ Compila ospite e motivazione");
+            await addDoc(collection(db, "contenzioni"), { ospite: o, tipo: t, dataInizio: window.getTodayString(), motivo: m, stato: "ATTIVA", op: window.activeOperator, firme: {} });
+            window.showToast("🔒 Contenzione prescritta.");
+        };
+
+        window.loadContenzioni = () => {
+            const tb = document.querySelector('#contenzioniTable tbody'); if(!tb) return; tb.innerHTML = '';
+            let attive = 0; window.dbContenzioni.forEach(c => { if(c.stato === 'ATTIVA') attive++; });
+            if(document.getElementById('dash-cont-count')) document.getElementById('dash-cont-count').innerText = attive;
+            
+            let d = window.dbContenzioni.filter(c => c.ospite === window.globalSelectedPatient);
+            if(d.length===0) return tb.innerHTML='<tr><td colspan="5" style="text-align:center;">Nessuna contenzione.</td></tr>';
+            d.forEach(c => {
+                let st = c.stato === 'ATTIVA' ? `<button class="btn-warning restrict-oss" onclick="window.revocaContenzione('${c.id}')">🔓 Revoca</button>` : 'REVOCATA';
+                let fm = c.firme?.Medico ? `✅ Med<br><img src="${c.firme.Medico.b64}" style="max-height:30px;">` : `<button class="btn-primary" style="padding:4px;" onclick="window.firmaContenzione('${c.id}','Medico')">Firma Med</button>`;
+                let fi = c.firme?.Infermiere ? `✅ Inf<br><img src="${c.firme.Infermiere.b64}" style="max-height:30px;">` : `<button class="btn-primary" style="padding:4px;" onclick="window.firmaContenzione('${c.id}','Infermiere')">Firma Inf</button>`;
+                tb.innerHTML += `<tr><td><strong>${c.ospite}</strong></td><td>${c.tipo}</td><td>${c.motivo}</td><td><div style="display:flex;gap:10px;">${fm}${fi}</div></td><td>${st}</td></tr>`;
+            });
+        };
+
+        window.firmaContenzione = async (id, ruolo) => {
+            if(ruolo === 'Medico' && !window.isMedicoOrAdmin()) return window.showToast("🚫 Solo Medico.");
+            if(ruolo === 'Infermiere' && window.activeOperatorQualifica !== 'Infermiere' && window.activeOperatorRole !== 'admin') return window.showToast("🚫 Solo Inf.");
+            window.openSignatureModal(`Firma Contenzione - ${ruolo}`, async (b64) => {
+                let c = window.dbContenzioni.find(x=>x.id===id); let sigs = c.firme || {};
+                sigs[ruolo] = { op: window.activeOperator, b64: b64 };
+                await updateDoc(doc(db, "contenzioni", id), { firme: sigs });
+                window.showToast("✅ Firma validata.");
+            });
+        };
+        window.revocaContenzione = async (id) => { if(confirm("Revocare?")) await updateDoc(doc(db, "contenzioni", id), { stato: "REVOCATA" }); };
+
+        window.addTabletRischio = async () => { await addDoc(collection(db, "rischio"), { tipo: document.getElementById('newRischioTipo').value, din: document.getElementById('newRischioDinamica').value, data: window.getTodayString(), op: window.activeOperator }); window.showToast("⚠️ Evento segnalato"); document.getElementById('newRischioDinamica').value='';};
+        window.addConsegna = async (t) => { const x=document.getElementById(t==='inf'?'newConsegnaInfText':'newConsegnaOssText').value; if(x) { await addDoc(collection(db,"consegne"), {text:x, type:t, op:window.activeOperator, date:window.getTimestamp()}); document.getElementById(t==='inf'?'newConsegnaInfText':'newConsegnaOssText').value=''; window.showToast("✅ Consegna salvata"); } };
+        
+        window.loadConsegne = () => { ['inf','oss'].forEach(t=>{ const l=document.getElementById(`consegne${t.charAt(0).toUpperCase()+t.slice(1)}List`); if(l){ l.innerHTML=''; window.dbConsegne.filter(c=>c.type===t).forEach(c=>l.innerHTML+=`<div style="border:1px solid #cbd5e1; padding:15px; margin-bottom:10px; border-radius:8px; background:#fff;"><strong style="color:var(--text-light);">${c.date} - ${c.op}</strong><div style="margin-top:10px; font-size:1.1em;">${c.text}</div></div>`); } }); };
+        window.loadAppointments = () => { const tb=document.querySelector('#appointmentsTable tbody'); if(tb){ tb.innerHTML=''; let a=[...window.dbCup].filter(c => c.guest === window.globalSelectedPatient).sort((x,y)=>new Date(x.data+'T'+x.time)-new Date(y.data+'T'+y.time)); if(a.length===0) tb.innerHTML='<tr><td colspan="4" style="text-align:center;">Nessun CUP.</td></tr>'; else a.forEach(c=>tb.innerHTML+=`<tr><td>${window.formatDateSafe(c.data)} ${c.time}</td><td><strong>${c.guest}</strong></td><td>${c.type}</td><td>${c.transport||'-'}</td></tr>`); } };
+        window.loadAlerts = () => { const l=document.getElementById('dashboardAlertsList'); if(!l) return; l.innerHTML=''; let c=0; window.dbOspiti.filter(g=>!g.decesso&&!g.dimissione).forEach(g=>{ let p=window.dbClinica[g.name]||{}; if(p.infezione){ l.innerHTML+=`<div class="alert-item">☣️ <strong>${g.name}</strong> - Isolamento: ${p.infezione}</div>`; c++; } }); if(c===0) l.innerHTML=`<p style="padding:15px; text-align:center;">Tutto in regola.</p>`; };
+
+        // --- ASCOLTATORI FIREBASE CORE ---
+        onSnapshot(collection(db, "operatori"), snap => { window.dbOperatori = snap.docs.map(d => ({id: d.id, ...d.data()})); window.loadOperatorsForLogin(); });
+        onSnapshot(collection(db, "ospiti"), snap => { window.dbOspiti = snap.docs.map(d => ({id: d.id, ...d.data()})); window.loadGuestsAndStats(); });
+        onSnapshot(collection(db, "cartelle_cliniche"), snap => { window.dbClinica = {}; snap.forEach(d => { window.dbClinica[d.id] = d.data(); }); if(window.globalSelectedPatient) window.handlePatientSelect('clinicalGuestSelect'); });
+        onSnapshot(collection(db, "qualita_nc"), snap => { window.dbNc = snap.docs.map(d => ({id: d.id, ...d.data()})); if(document.getElementById('ws-qualita').classList.contains('active')) window.renderTabletNC(); });
+        onSnapshot(collection(db, "contenzioni"), snap => { window.dbContenzioni = snap.docs.map(d=>({id:d.id, ...d.data()})); if(document.getElementById('ws-contenzioni').classList.contains('active')) window.loadContenzioni(); });
+        onSnapshot(collection(db, "consegne"), snap => { window.dbConsegne = snap.docs.map(d=>({id:d.id, ...d.data()})).sort((a,b)=>new Date(b.date.replace(' alle ','T'))-new Date(a.date.replace(' alle ','T'))); if(document.getElementById('ws-consegne').classList.contains('active')) window.loadConsegne(); });
+        onSnapshot(collection(db, "cup"), snap => { window.dbCup = snap.docs.map(d=>({id:d.id, ...d.data()})); let t=new Date(); t.setHours(0,0,0,0); let f=window.dbCup.filter(x=>new Date(x.data)>=t); if(document.getElementById('dash-app-count')) document.getElementById('dash-app-count').innerText=f.length; });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            window.attachSignatureEvents('modalSignaturePad');
+            window.attachSignatureEvents('sig-canvas');
+            
+            let savedOp = sessionStorage.getItem("activeOperator");
+            if(savedOp) {
+                window.activeOperator = savedOp;
+                window.activeOperatorRole = sessionStorage.getItem("activeRole") || "user";
+                window.activeOperatorQualifica = sessionStorage.getItem("activeQualifica") || "Operatore";
+                document.getElementById('currentOpBadge').innerText = savedOp;
+                document.getElementById('currentOpRole').innerText = window.activeOperatorQualifica;
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('tablet-header').style.display = 'flex';
+                document.getElementById('home-menu').style.display = 'grid';
+                document.body.setAttribute('data-qualifica', window.activeOperatorQualifica);
+                if(window.isMedicoOrAdmin()) document.body.setAttribute('data-med-access', 'true');
+                if(window.activeOperatorRole === 'admin') document.body.setAttribute('data-role', 'admin');
+            }
+        });
+    </script>
+</body>
+</html>
