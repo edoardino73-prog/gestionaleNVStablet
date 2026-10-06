@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NVS Tablet - Terapia & Scarico Stupefacenti DPR 309/90</title>
+
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --box-bg: #ffffff;
+            --primary-color: #0284c7;
+            --secondary-color: #0369a1;
+            --text-main: #0f172a;
+            --text-light: #475569;
+            --border-color: #cbd5e1;
+            --error-color: #e11d48;
+            --warning-color: #d97706;
+            --success-color: #059669;
+            --narc-color: #b91c1c;
+            --radius: 8px;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-main);
+            font-size: 15px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            user-select: none;
+        }
+
+        /* BLOCCO PER OSS E SERVIZI GENERALI */
+        body[data-qualifica="OSS"] .restrict-oss { display: none !important; }
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] { display: none !important; }
+        body:not([data-med-access="true"]) .only-medico { display: none !important; }
+
+        .tablet-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 12px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .tablet-title { font-size: 1.15em; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+
+        .op-pill-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.4);
+            color: white;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-nav-home {
+            background: rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 7px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+
+        .patient-bar {
+            background: #ffffff;
+            border-bottom: 2px solid var(--border-color);
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            position: sticky;
+            top: 55px;
+            z-index: 990;
+        }
+
+        .patient-select {
+            flex: 1;
+            min-width: 280px;
+            min-height: 48px;
+            font-size: 1.05em;
+            font-weight: 700;
+            border: 2px solid var(--primary-color);
+            border-radius: 6px;
+            padding: 6px 12px;
+            background: #f0f9ff;
+            color: var(--text-main);
+        }
+
+        .patient-badges { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .badge-alert { padding: 5px 10px; border-radius: 6px; font-weight: 800; font-size: 0.85em; }
+        .badge-disfagia { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .badge-ica { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        .view-switcher-bar {
+            display: flex;
+            background: #e2e8f0;
+            padding: 6px 12px;
+            gap: 8px;
+        }
+
+        .switch-btn {
+            flex: 1;
+            min-height: 46px;
+            border: 1px solid #94a3b8;
+            background: #ffffff;
+            color: var(--text-light);
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.92em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.1s ease;
+        }
+        .switch-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--secondary-color);
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+        }
+
+        .tablet-container {
+            max-width: 1400px;
+            width: 96%;
+            margin: 12px auto;
+            flex-grow: 1;
+            padding-bottom: 40px;
+        }
+
+        .touch-workspace { display: none; }
+        .touch-workspace.active { display: block; }
+
+        .med-cart-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-left: 6px solid var(--primary-color);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .med-cart-card.is-narcotic {
+            border-left-color: var(--narc-color);
+            background: #fff5f5;
+        }
+
+        .med-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .med-title { font-size: 1.2em; font-weight: 800; color: var(--text-main); margin: 0; }
+        .med-posologia { color: var(--primary-color); font-weight: 700; font-size: 0.95em; }
+
+        .narc-badge {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
+            font-size: 0.8em;
+            font-weight: 800;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .slots-touch-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        .slot-touch-btn {
+            min-height: 54px;
+            border-radius: 8px;
+            border: 2px solid #cbd5e1;
+            background: #f8fafc;
+            color: #334155;
+            font-weight: 800;
+            font-size: 1em;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.1s ease;
+        }
+        .slot-touch-btn.narc-slot {
+            border-color: #fca5a5;
+            background: #fff1f2;
+            color: #991b1b;
+        }
+        .slot-touch-btn.signed {
+            background: #dcfce7 !important;
+            border-color: #22c55e !important;
+            color: #15803d !important;
+        }
+        .slot-touch-btn.signed.narc-signed {
+            background: #fee2e2 !important;
+            border-color: #ef4444 !important;
+            color: #991b1b !important;
+        }
+        .slot-sig-meta { font-size: 0.7em; font-weight: 700; color: #166534; margin-top: 2px; }
+
+        .terapia-matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82em;
+            background: #ffffff;
+            text-align: center;
+        }
+        .terapia-matrix-table th, .terapia-matrix-table td { border: 1px solid #cbd5e1; padding: 4px 2px; }
+        .terapia-matrix-table th { background: var(--primary-color); color: white; padding: 8px 3px; font-weight: 700; }
+        .terapia-matrix-table td.col-farmaco {
+            text-align: left;
+            padding: 8px 10px;
+            min-width: 220px;
+            background: #f8fafc;
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            border-right: 2px solid var(--primary-color);
+        }
+
+        .cell-shift-btn {
+            width: 95%;
+            min-width: 34px;
+            height: 22px;
+            line-height: 22px;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: 800;
+            border: 1px solid #94a3b8;
+            background: #e2e8f0;
+            color: #1e293b;
+            cursor: pointer;
+            margin: 2px auto;
+        }
+        .cell-shift-btn.is-signed { background: #dcfce7; border-color: #16a34a; color: #15803d; }
+        .cell-shift-btn.is-signed-narc { background: #fee2e2; border-color: #dc2626; color: #991b1b; }
+
+        #signatureModal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.65);
+            z-index: 50000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .btn-touch {
+            min-height: 48px;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.95em;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: white;
+        }
+        .btn-green { background: var(--success-color); }
+        .btn-red { background: var(--error-color); }
+        .btn-doc { background: #475569; }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 60000; }
+        .toast { background: #0f172a; color: #fff; padding: 12px 20px; border-radius: 6px; font-weight: 800; margin-top: 10px; }
+        .toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+
+    <div id="signatureModal">
+        <div style="background:#fff; border-radius:10px; max-width:520px; width:100%; padding:22px; text-align:center;">
+            <h3 id="sigModalTitle" style="color:var(--primary-color); margin-top:0;">Validazione Piano Terapeutico</h3>
+            <p style="font-size:0.88em; color:var(--text-light); margin-bottom:12px;">Apponi la firma del Medico / Direttore Sanitario con pennino o dito:</p>
+            <div style="border:2px dashed #94a3b8; border-radius:6px; background:#f8fafc; margin-bottom:14px; overflow:hidden;">
+                <canvas id="modalSignaturePad" width="460" height="180" style="display:block; width:100%; height:180px; touch-action:none; cursor:crosshair;"></canvas>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:center;">
+                <button class="btn-touch btn-doc" onclick="window.clearModalSignature()">🔄 Cancella</button>
+                <button class="btn-touch btn-red" onclick="document.getElementById('signatureModal').style.display='none'">✕ Annulla</button>
+                <button class="btn-touch btn-green" onclick="window.confirmModalSignature()">✅ Conferma Firma</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="tablet-header">
+        <div class="tablet-title">
+            <span>💊 NVS Touch | Terapia & DPR 309/90</span>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <button class="op-pill-btn">
+                👤 <span id="lblOpName">Caricamento...</span>
+            <button class="nav-btn" onclick="window.location.href='index.html'">🏠 Home</button>
+                   </div>
+    </div>
+
+    <div class="patient-bar">
+        <select id="guestSelect" class="patient-select" onchange="window.handlePatientChange(this.value)">
+            <option value="" disabled selected>Seleziona Ospite...</option>
+        </select>
+        <div id="patientBadges" class="patient-badges"></div>
+    </div>
+
+    <div class="view-switcher-bar">
+        <button id="btnViewOggi" class="switch-btn active" onclick="window.switchTerapiaView('oggi')">
+            🕒 Giro Letti (Oggi)
+        </button>
+        <button id="btnViewMese" class="switch-btn" onclick="window.switchTerapiaView('mese')">
+            📅 Griglia Mese (31 gg)
+        </button>
+        <button id="btnViewNarc" class="switch-btn" onclick="window.switchTerapiaView('narc')">
+            🔒 Armadio Stupefacenti
+        </button>
+    </div>
+
+    <div class="tablet-container">
+        <!-- 1. VISTA GIRO LETTI OGGI -->
+        <div id="view-oggi" class="touch-workspace active">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                <h3 style="margin:0; color:var(--primary-color);">Somministrazioni di Oggi</h3>
+                <span id="lblOggiDate" style="font-weight:800; color:var(--text-light); font-size:0.95em;">-</span>
+            </div>
+            <div id="cartMedCardsContainer">
+                <div style="background:#fff; border:1px solid #cbd5e1; padding:20px; text-align:center; border-radius:8px; color:#64748b;">
+                    Seleziona un paziente in alto per visualizzare le terapie attive.
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. VISTA GRIGLIA MENSILE -->
+        <div id="view-mese" class="touch-workspace">
+            <div style="background:#fff; border:1px solid var(--border-color); border-radius:8px; padding:12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                <button class="btn-touch btn-doc" onclick="window.changeMonth(-1)">◀ Mese Prec.</button>
+                <h3 id="lblMonthYear" style="margin:0; color:var(--primary-color); text-transform:uppercase;">...</h3>
+                <button class="btn-touch btn-doc" onclick="window.changeMonth(1)">Mese Succ. ▶</button>
+            </div>
+
+            <div style="background:#fff; border:1px solid var(--border-color); border-radius:8px; overflow:hidden; margin-bottom:14px; overflow-x:auto;">
+                <table class="terapia-matrix-table" id="tableMatrix">
+                    <thead><tr id="matrixHeader"></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:14px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <strong style="color:var(--success-color); font-size:1em;">Validazione Piano Terapeutico Mensile:</strong>
+                    <div id="statusValidazioneMese" style="font-size:0.88em; color:var(--text-light); margin-top:2px;">In attesa di validazione</div>
+                </div>
+                <button id="btnValidaPianoMese" class="btn-touch btn-green only-medico" onclick="window.apriFirmaMedicaMensile()">
+                    ✍️ Valida & Firma Piano (Medico)
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. VISTA ARMADIO STUPEFACENTI -->
+        <div id="view-narc" class="touch-workspace">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:14px;">
+                <div style="background:#fff; border:1px solid var(--border-color); border-radius:8px; padding:14px; border-top:4px solid var(--narc-color);">
+                    <h3 style="color:var(--narc-color); margin:0 0 10px 0;">📦 Giacenze Armadio Stupefacenti</h3>
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%; border-collapse:collapse; font-size:0.9em;">
+                            <thead>
+                                <tr style="background:#fee2e2; color:#991b1b;">
+                                    <th style="padding:6px 8px; text-align:left;">Farmaco</th>
+                                    <th style="padding:6px 8px; text-align:center;">Giacenza</th>
+                                    <th style="padding:6px 8px; text-align:center;">Stato</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tblNarcInvBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="background:#fff; border:1px solid var(--border-color); border-radius:8px; padding:14px; border-top:4px solid var(--narc-color);">
+                    <h3 style="color:var(--narc-color); margin:0 0 10px 0;">📜 Ultimi Movimenti Registrati (DPR 309/90)</h3>
+                    <div style="overflow-x:auto; max-height:420px; overflow-y:auto;">
+                        <table style="width:100%; border-collapse:collapse; font-size:0.85em;">
+                            <thead>
+                                <tr style="background:#f1f5f9;">
+                                    <th style="padding:6px 8px; text-align:left;">Data</th>
+                                    <th style="padding:6px 8px; text-align:left;">Farmaco</th>
+                                    <th style="padding:6px 8px; text-align:center;">Q.tà</th>
+                                    <th style="padding:6px 8px; text-align:left;">Causale</th>
+                                    <th style="padding:6px 8px; text-align:left;">Op</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tblNarcLogBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
+            authDomain: "gestione-visite-b445b.firebaseapp.com", 
+            projectId: "gestione-visite-b445b", 
+            storageBucket: "gestione-visite-b445b.firebasestorage.app", 
+            messagingSenderId: "720937824810", 
+            appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.dbOspiti = [];
+        window.dbClinica = {};
+        window.dbContenzioni = [];
+        window.dbStupefacentiInv = [];
+        window.dbStupefacentiLog = [];
+
+        window.globalSelectedPatient = sessionStorage.getItem("globalSelectedPatient") || "";
+        window.activeOperator = sessionStorage.getItem("activeOperator") || "Infermiere";
+        window.activeOperatorRole = sessionStorage.getItem("activeRole") || "user";
+        window.activeOperatorQualifica = sessionStorage.getItem("activeQualifica") || "Infermiere";
+
+        let curDate = new Date();
+        let curMonth = curDate.getMonth();
+        let curYear = curDate.getFullYear();
+        const monthNames = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+
+        window.showToast = (m) => { 
+            const c = document.getElementById('toast-container'); 
+            const t = document.createElement('div'); 
+            t.className = 'toast'; 
+            t.innerText = m; 
+            c.appendChild(t); 
+            setTimeout(() => t.classList.add('show'), 10); 
+            setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000); 
+        };
+
+        window.getTimestamp = () => { 
+            const n = new Date(); 
+            return `${n.toLocaleDateString('it-IT')} alle ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}`; 
+        };
+
+        window.getTodayString = () => { 
+            const n = new Date(); 
+            return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; 
+        };
+
+        window.getInitials = (n) => { 
+            if(!n) return ""; 
+            return n.replace(/Inf\.|Dr\.|OSS/gi,'').trim().split(' ').map(x=>x[0].toUpperCase()).join('.')+'.'; 
+        };
+
+        // CALCOLO ETÀ ANAGRAFICA
+        window.calcolaEta = (dobStr) => {
+            if (!dobStr) return '';
+            let birthDate;
+            if (typeof dobStr === 'string' && dobStr.includes('/')) {
+                const parts = dobStr.split('/');
+                if (parts.length === 3) birthDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+            } else {
+                birthDate = new Date(dobStr);
+            }
+            if (!birthDate || isNaN(birthDate.getTime())) return '';
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+            return (age >= 0 && age < 130) ? `${age} anni` : '';
+        };
+
+        function trovaStupefacente(nomeFarmaco) {
+            if (!nomeFarmaco || !window.dbStupefacentiInv || window.dbStupefacentiInv.length === 0) return null;
+            const target = nomeFarmaco.toLowerCase().trim();
+            let found = window.dbStupefacentiInv.find(i => {
+                const invNome = i.nome.toLowerCase().trim();
+                return target.includes(invNome) || invNome.includes(target);
+            });
+            if (found) return found;
+
+            const parole = target.split(/[\s,()\/]+/).filter(w => w.length > 3);
+            for (let w of parole) {
+                found = window.dbStupefacentiInv.find(i => i.nome.toLowerCase().includes(w));
+                if (found) return found;
+            }
+            return null;
+        }
+
+        function estraiQta(pos) {
+            if (!pos) return 1;
+            const match = pos.trim().match(/^(\d+([\.,]\d+)?)/);
+            if (match) {
+                const val = parseFloat(match[1].replace(',', '.'));
+                return isNaN(val) || val <= 0 ? 1 : val;
+            }
+            return 1;
+        }
+
+        window.switchTerapiaView = (viewName) => {
+            document.querySelectorAll('.touch-workspace').forEach(w => w.classList.remove('active'));
+            document.querySelectorAll('.switch-btn').forEach(b => b.classList.remove('active'));
+
+            document.getElementById('view-' + viewName).classList.add('active');
+            if (viewName === 'oggi') document.getElementById('btnViewOggi').classList.add('active');
+            if (viewName === 'mese') document.getElementById('btnViewMese').classList.add('active');
+            if (viewName === 'narc') document.getElementById('btnViewNarc').classList.add('active');
+        };
+
+        window.handlePatientChange = (n) => {
+            window.globalSelectedPatient = n;
+            sessionStorage.setItem("globalSelectedPatient", n);
+            window.renderPatientBadges(n);
+            window.renderOggiCards(n);
+            window.renderMatrixTable(n);
+        };
+
+        window.renderPatientBadges = (n) => {
+            const box = document.getElementById('patientBadges');
+            box.innerHTML = '';
+            if (!n) return;
+            const g = window.dbOspiti.find(x => x.name === n) || {};
+            const pD = window.dbClinica[n] || {};
+            const eta = window.calcolaEta(g.dob);
+
+            if (eta) box.innerHTML += `<span class="badge-alert" style="background:#fffbeb; color:#92400e; border:1px solid #fde68a;">🎂 ${eta}</span>`;
+            if (pD.disfagia) box.innerHTML += `<span class="badge-alert badge-disfagia">🥣 Disfagico</span>`;
+            if (pD.infezione) box.innerHTML += `<span class="badge-alert badge-ica">☣ ${pD.infezione}</span>`;
+            if (window.dbContenzioni.some(c => c.ospite === n && c.stato === 'ATTIVA')) box.innerHTML += `<span class="badge-alert" style="background:#ffe4e6; color:#be123c;">🔒 Contenzione</span>`;
+        };
+
+        window.renderOggiCards = (n) => {
+            const container = document.getElementById('cartMedCardsContainer');
+            const todayStr = window.getTodayString();
+            document.getElementById('lblOggiDate').innerText = new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+            if (!n) {
+                container.innerHTML = `<div style="background:#fff; border:1px solid #cbd5e1; padding:25px; text-align:center; border-radius:8px; color:#64748b; font-size:1.1em;">Seleziona un paziente in alto per iniziare il giro somministrazione.</div>`;
+                return;
+            }
+
+            const clin = window.dbClinica[n] || {};
+            const list = clin.terapiaList || [];
+
+            if (list.length === 0) {
+                container.innerHTML = `<div style="background:#fff; border:1px solid #cbd5e1; padding:25px; text-align:center; border-radius:8px; color:#64748b; font-size:1.1em;">Nessun farmaco prescritto per ${n}.</div>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            list.forEach((t, i) => {
+                const narcItem = trovaStupefacente(t.farmaco);
+                const isNarc = !!narcItem;
+                const narcBadgeHtml = isNarc ? `<span class="narc-badge">🔒 DPR 309/90 (Giac: ${narcItem.qta})</span>` : '';
+
+                const card = document.createElement('div');
+                card.className = `med-cart-card ${isNarc ? 'is-narcotic' : ''}`;
+
+                let slotsArray = (t.orario && t.orario !== 'Firma') ? t.orario.split('-').map(s => s.trim()) : ["Firma"];
+                let slotsHtml = '';
+
+                slotsArray.forEach(sl => {
+                    const sk = `${todayStr}_${sl}`;
+                    const sig = t.signatures ? (t.signatures[sk] || t.signatures[todayStr]) : null;
+
+                    if (sig) {
+                        const isNarcSig = !!sig.narcoticId;
+                        slotsHtml += `
+                            <button type="button" class="slot-touch-btn signed ${isNarcSig ? 'narc-signed' : ''}" onclick="window.gestisciFirmaSlot(${i}, '${todayStr}', '${sl}')">
+                                <span>✓ ${sl}</span>
+                                <span class="slot-sig-meta">${sig.op} (${sig.time||'-'})</span>
+                            </button>`;
+                    } else {
+                        slotsHtml += `
+                            <button type="button" class="slot-touch-btn ${isNarc ? 'narc-slot' : ''}" onclick="window.gestisciFirmaSlot(${i}, '${todayStr}', '${sl}')">
+                                <span>${sl}</span>
+                                <span style="font-size:0.7em; opacity:0.8;">Tocca per dare</span>
+                            </button>`;
+                    }
+                });
+
+                card.innerHTML = `
+                    <div class="med-header-row">
+                        <div>
+                            <h4 class="med-title">${t.farmaco}</h4>
+                            <div class="med-posologia">Posologia: ${t.posologia || '1 dose'} | 🕒 ${t.orario || 'Orario'}</div>
+                            ${t.note ? `<div style="font-size:0.85em; color:var(--text-light); font-style:italic;">Note: ${t.note}</div>` : ''}
+                        </div>
+                        <div>${narcBadgeHtml}</div>
+                    </div>
+                    <div>
+                        <span style="font-size:0.8em; font-weight:700; color:var(--text-light); text-transform:uppercase;">Slot Orari di Oggi:</span>
+                        <div class="slots-touch-grid">${slotsHtml}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        };
+
+        window.gestisciFirmaSlot = async (idxFarmaco, dStr, slot) => {
+            // VERIFICA RUOLO: OSS E SERVIZI GENERALI NON POSSONO SOMMINISTRARE
+            if (['OSS', 'Servizi Generali (Cucina/Pulizie/Lavanderia)'].includes(window.activeOperatorQualifica) && window.activeOperatorRole !== 'admin') {
+                return window.showToast("🚫 Somministrazione riservata a Personale Infermieristico o Medico!");
+            }
+
+            const n = window.globalSelectedPatient;
+            if (!n) return window.showToast("⚠️ Nessun paziente selezionato!");
+
+            let clin = window.dbClinica[n] || {};
+            let item = clin.terapiaList[idxFarmaco];
+            if (!item.signatures) item.signatures = {};
+            const sk = `${dStr}_${slot}`;
+            const existingSig = item.signatures[sk] || item.signatures[dStr];
+
+            // REVOCA
+            if (existingSig && existingSig.op) {
+                if (['Medico', 'Direttore Sanitario'].includes(window.activeOperatorQualifica) || window.activeOperatorRole === 'admin') {
+                    if (confirm(`Revocare la somministrazione di ${item.farmaco} (${slot}) firmata da ${existingSig.op}?`)) {
+                        if (existingSig.narcoticId && existingSig.narcoticQta) {
+                            if (confirm(`Reintegrare la giacenza nell'Armadio Stupefacenti (+${existingSig.narcoticQta} unità)?`)) {
+                                const itm = window.dbStupefacentiInv.find(x => x.id === existingSig.narcoticId || x.nome.toLowerCase() === existingSig.narcoticName.toLowerCase());
+                                if (itm) {
+                                    await updateDoc(doc(db, "stupefacenti_inv", itm.id), { qta: itm.qta + existingSig.narcoticQta });
+                                }
+                                await addDoc(collection(db, "stupefacenti_log"), {
+                                    nome: existingSig.narcoticName,
+                                    tipo: "CARICO",
+                                    qta: existingSig.narcoticQta,
+                                    rif: `Storno revoca somministrazione ${n} (${slot})`,
+                                    op: window.activeOperator,
+                                    date: window.getTimestamp(),
+                                    auto: true
+                                });
+                            }
+                        }
+
+                        delete item.signatures[sk];
+                        if (item.signatures[dStr]) delete item.signatures[dStr];
+                        await setDoc(doc(db, "cartelle_cliniche", n), clin, { merge: true });
+                        window.showToast("↩️ Somministrazione revocata");
+                        window.renderOggiCards(n);
+                        window.renderMatrixTable(n);
+                    }
+                } else {
+                    window.showToast("🔒 Solo il Medico o Dir. Sanitario può revocare una somministrazione");
+                }
+                return;
+            }
+
+            if (dStr !== window.getTodayString()) {
+                return window.showToast("⚠️ Puoi firmare solo la somministrazione di oggi!");
+            }
+
+            // SCARICO AUTOMATICO STUPEFACENTI DPR 309/90
+            const narcItem = trovaStupefacente(item.farmaco);
+            let narcInfo = null;
+
+            if (narcItem) {
+                const qtaScaricata = estraiQta(item.posologia);
+                if (narcItem.qta < qtaScaricata) {
+                    if (!confirm(`⚠️ Giacenza insufficiente nell'Armadio Stupefacenti!\nGiacenza: ${narcItem.qta} unità\nConfermare forzatura?`)) {
+                        return;
+                    }
+                }
+                const nuovaGiacenza = Math.max(0, narcItem.qta - qtaScaricata);
+                await updateDoc(doc(db, "stupefacenti_inv", narcItem.id), { qta: nuovaGiacenza });
+
+                await addDoc(collection(db, "stupefacenti_log"), {
+                    nome: narcItem.nome,
+                    tipo: "SCARICO",
+                    qta: qtaScaricata,
+                    rif: `Somm. ${n} (${slot}) - DPR 309/90`,
+                    op: window.activeOperator,
+                    date: window.getTimestamp(),
+                    auto: true
+                });
+
+                await addDoc(collection(db, "audit_trail"), {
+                    data: window.getTimestamp(),
+                    timestamp: Date.now(),
+                    ospite: n,
+                    operatore: window.activeOperator,
+                    qualifica: window.activeOperatorQualifica,
+                    azione: "SCARICO_AUTOMATICO_DPR309",
+                    farmaco: narcItem.nome,
+                    qta: qtaScaricata,
+                    slot: slot,
+                    dettaglio: `Somministrazione e scarico DPR 309/90: ${narcItem.nome} (${qtaScaricata} unità) - Fascia ${slot}.`
+                });
+
+                narcInfo = { narcoticId: narcItem.id, narcoticName: narcItem.nome, narcoticQta: qtaScaricata };
+            }
+
+            item.signatures[sk] = {
+                op: window.activeOperator,
+                time: new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }),
+                ...(narcInfo || {})
+            };
+
+            await setDoc(doc(db, "cartelle_cliniche", n), clin, { merge: true });
+
+            if (narcItem) window.showToast(`🔒 Firmato & ${narcItem.nome} scaricato da DPR 309/90!`);
+            else window.showToast(`✅ Somministrato: ${item.farmaco}`);
+
+            window.renderOggiCards(n);
+            window.renderMatrixTable(n);
+        };
+
+        window.changeMonth = (d) => {
+            curMonth += d;
+            if (curMonth > 11) { curMonth = 0; curYear++; }
+            if (curMonth < 0) { curMonth = 11; curYear--; }
+            const n = window.globalSelectedPatient;
+            if (n) window.renderMatrixTable(n);
+        };
+
+        window.renderMatrixTable = (n) => {
+            document.getElementById('lblMonthYear').innerText = `${monthNames[curMonth]} ${curYear}`;
+            const th = document.getElementById('matrixHeader');
+            const tb = document.querySelector('#tableMatrix tbody');
+            if (!th || !tb) return;
+
+            let dIM = new Date(curYear, curMonth + 1, 0).getDate();
+            let hh = `<th class="col-farmaco">Farmaco / Posologia</th>`;
+            for (let i = 1; i <= dIM; i++) hh += `<th>${i}</th>`;
+            th.innerHTML = hh;
+            tb.innerHTML = '';
+
+            if (!n) {
+                tb.innerHTML = `<tr><td colspan="${dIM + 1}" style="padding:15px; color:#64748b;">Nessun paziente selezionato.</td></tr>`;
+                return;
+            }
+
+            const clin = window.dbClinica[n] || {};
+            const list = clin.terapiaList || [];
+            const monthKey = `${curYear}-${String(curMonth + 1).padStart(2, '0')}`;
+            const firmaMese = clin.terapiaFirmeMensili ? clin.terapiaFirmeMensili[monthKey] : null;
+
+            if (firmaMese && firmaMese.op) {
+                document.getElementById('statusValidazioneMese').innerHTML = `✅ Validato da <strong>${firmaMese.op}</strong> il ${firmaMese.data}`;
+                document.getElementById('btnValidaPianoMese').style.display = 'none';
+            } else {
+                document.getElementById('statusValidazioneMese').innerHTML = `⏳ In attesa di validazione medica per ${monthNames[curMonth]} ${curYear}`;
+                document.getElementById('btnValidaPianoMese').style.display = 'block';
+            }
+
+            if (list.length === 0) {
+                tb.innerHTML = `<tr><td colspan="${dIM + 1}" style="padding:15px; color:#64748b;">Nessuna prescrizione farmacologica registrata.</td></tr>`;
+                return;
+            }
+
+            const todayStr = window.getTodayString();
+            let rows = "";
+
+            list.forEach((t, i) => {
+                const narcItem = trovaStupefacente(t.farmaco);
+                const isNarc = !!narcItem;
+                const narcFlag = isNarc ? `<br><span class="narc-badge">🔒 DPR 309</span>` : '';
+
+                rows += `<tr><td class="col-farmaco"><strong>${t.farmaco}</strong><br><span style="color:var(--primary-color);">${t.posologia||''}</span><br><small>🕒 ${t.orario||''}</small>${narcFlag}</td>`;
+                const slotsArray = (t.orario && t.orario !== 'Firma') ? t.orario.split('-').map(s => s.trim()) : ["Firma"];
+
+                for (let day = 1; day <= dIM; day++) {
+                    const dStr = `${curYear}-${String(curMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                    let cellBtns = "";
+
+                    slotsArray.forEach(sl => {
+                        const sk = `${dStr}_${sl}`;
+                        const sig = t.signatures ? (t.signatures[sk] || t.signatures[dStr]) : null;
+
+                        if (sig) {
+                            const isNarcSig = !!sig.narcoticId;
+                            cellBtns += `<div class="cell-shift-btn ${isNarcSig ? 'is-signed-narc' : 'is-signed'}" onclick="window.gestisciFirmaSlot(${i}, '${dStr}', '${sl}')">${window.getInitials(sig.op)}</div>`;
+                        } else {
+                            cellBtns += `<div class="cell-shift-btn" style="${dStr !== todayStr ? 'opacity:0.4;' : ''}" onclick="window.gestisciFirmaSlot(${i}, '${dStr}', '${sl}')">${sl}</div>`;
+                        }
+                    });
+                    rows += `<td>${cellBtns}</td>`;
+                }
+                rows += `</tr>`;
+            });
+            tb.innerHTML = rows;
+        };
+
+        window.renderNarcoticsView = () => {
+            const invBody = document.getElementById('tblNarcInvBody');
+            const logBody = document.getElementById('tblNarcLogBody');
+            if (!invBody || !logBody) return;
+
+            invBody.innerHTML = '';
+            window.dbStupefacentiInv.sort((a,b) => a.nome.localeCompare(b.nome)).forEach(i => {
+                const bg = i.qta === 0 ? '#fef2f2' : (i.qta <= 5 ? '#fffbeb' : '');
+                const st = i.qta === 0 ? '🔴 Esaurito' : (i.qta <= 5 ? '🟡 Sottoscorta' : '🟢 Regolare');
+                invBody.innerHTML += `
+                    <tr style="background:${bg}; border-bottom:1px solid #cbd5e1;">
+                        <td style="padding:8px;"><strong>${i.nome}</strong></td>
+                        <td style="padding:8px; text-align:center; font-weight:800; font-size:1.1em;">${i.qta}</td>
+                        <td style="padding:8px; text-align:center;">${st}</td>
+                    </tr>`;
+            });
+
+            logBody.innerHTML = '';
+            window.dbStupefacentiLog.sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0, 30).forEach(l => {
+                const isScarico = l.tipo === 'SCARICO';
+                logBody.innerHTML += `
+                    <tr style="border-bottom:1px solid #e2e8f0;">
+                        <td style="padding:6px;"><small>${l.date}</small></td>
+                        <td style="padding:6px;"><strong>${l.nome}</strong></td>
+                        <td style="padding:6px; text-align:center;"><strong style="color:${isScarico?'#b91c1c':'#15803d'};">${isScarico?'-':'+'}${l.qta}</strong></td>
+                        <td style="padding:6px;"><small>${l.rif}</small></td>
+                        <td style="padding:6px;"><small>${window.getInitials(l.op)}</small></td>
+                    </tr>`;
+            });
+        };
+
+        window.apriFirmaMedicaMensile = () => {
+            if (!['Medico', 'Direttore Sanitario'].includes(window.activeOperatorQualifica) && window.activeOperatorRole !== 'admin') {
+                return window.showToast("🚫 Riservato a Medico o Direttore Sanitario!");
+            }
+            document.getElementById('sigModalTitle').innerText = `Validazione Terapia: ${monthNames[curMonth]} ${curYear}`;
+            document.getElementById('signatureModal').style.display = 'flex';
+            window.clearModalSignature();
+        };
+
+        window.clearModalSignature = () => {
+            const cv = document.getElementById('modalSignaturePad');
+            const c = cv.getContext('2d');
+            c.clearRect(0, 0, cv.width, cv.height);
+            c.fillStyle = "#ffffff";
+            c.fillRect(0, 0, cv.width, cv.height);
+            c.lineWidth = 2.8;
+            c.strokeStyle = "#0f172a";
+            c.lineCap = "round";
+        };
+
+        window.confirmModalSignature = async () => {
+            const n = window.globalSelectedPatient;
+            if (!n) return;
+            const cv = document.getElementById('modalSignaturePad');
+            const b64 = cv.toDataURL('image/png');
+
+            let clin = window.dbClinica[n] || {};
+            if (!clin.terapiaFirmeMensili) clin.terapiaFirmeMensili = {};
+            const monthKey = `${curYear}-${String(curMonth + 1).padStart(2, '0')}`;
+            clin.terapiaFirmeMensili[monthKey] = {
+                op: window.activeOperator,
+                data: window.getTimestamp(),
+                b64: b64
+            };
+
+            await addDoc(collection(db, "audit_trail"), {
+                data: window.getTimestamp(),
+                timestamp: Date.now(),
+                ospite: n,
+                operatore: window.activeOperator,
+                qualifica: window.activeOperatorQualifica,
+                azione: "VALIDAZIONE_PIANO_TERAPEUTICO_MENSILE",
+                dettaglio: `Validazione e blocco mensile terapia per ${monthNames[curMonth]} ${curYear}.`
+            });
+
+            await setDoc(doc(db, "cartelle_cliniche", n), clin, { merge: true });
+            document.getElementById('signatureModal').style.display = 'none';
+            window.showToast("✅ Piano mensile validato e firmato!");
+            window.renderMatrixTable(n);
+        };
+
+        const canvas = document.getElementById('modalSignaturePad');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+
+        const getPos = (e) => {
+            const r = canvas.getBoundingClientRect();
+            let cx = e.touches ? e.touches[0].clientX : e.clientX;
+            let cy = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: (cx - r.left) * (canvas.width / r.width),
+                y: (cy - r.top) * (canvas.height / r.height)
+            };
+        };
+
+        canvas.addEventListener('mousedown', (e)=>{ isDrawing=true; let p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
+        canvas.addEventListener('mousemove', (e)=>{ if(!isDrawing) return; let p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); });
+        window.addEventListener('mouseup', ()=>isDrawing=false);
+        canvas.addEventListener('touchstart', (e)=>{ isDrawing=true; let p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); e.preventDefault(); }, {passive:false});
+        canvas.addEventListener('touchmove', (e)=>{ if(!isDrawing) return; let p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); e.preventDefault(); }, {passive:false});
+        canvas.addEventListener('touchend', ()=>isDrawing=false);
+
+        onSnapshot(collection(db, "ospiti"), snap => {
+            window.dbOspiti = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            const sel = document.getElementById('guestSelect');
+            sel.innerHTML = '<option value="" disabled selected>Seleziona Ospite...</option>';
+            window.dbOspiti.filter(g => !g.decesso && !g.dimissione).sort((a,b) => a.name.localeCompare(b.name)).forEach(g => {
+                const eta = window.calcolaEta(g.dob);
+                const etaTxt = eta ? ` (🎂 ${eta})` : '';
+                sel.innerHTML += `<option value="${g.name}">🛏️ Stanza ${g.room||'-'}: ${g.name}${etaTxt}</option>`;
+            });
+            if (window.globalSelectedPatient) {
+                sel.value = window.globalSelectedPatient;
+                window.handlePatientChange(window.globalSelectedPatient);
+            }
+        });
+
+        onSnapshot(collection(db, "cartelle_cliniche"), snap => {
+            window.dbClinica = {};
+            snap.forEach(d => { window.dbClinica[d.id] = d.data(); });
+            if (window.globalSelectedPatient) {
+                window.renderOggiCards(window.globalSelectedPatient);
+                window.renderMatrixTable(window.globalSelectedPatient);
+            }
+        });
+
+        onSnapshot(collection(db, "stupefacenti_inv"), snap => {
+            window.dbStupefacentiInv = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            window.renderNarcoticsView();
+            if (window.globalSelectedPatient) {
+                window.renderOggiCards(window.globalSelectedPatient);
+                window.renderMatrixTable(window.globalSelectedPatient);
+            }
+        });
+
+        onSnapshot(collection(db, "stupefacenti_log"), snap => {
+            window.dbStupefacentiLog = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            window.renderNarcoticsView();
+        });
+
+        onSnapshot(collection(db, "contenzioni"), snap => {
+            window.dbContenzioni = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            if (window.globalSelectedPatient) window.renderPatientBadges(window.globalSelectedPatient);
+        });
+
+        window.onload = () => {
+            document.getElementById('lblOpName').innerText = `${window.activeOperator} (${window.activeOperatorQualifica})`;
+            document.body.setAttribute('data-qualifica', window.activeOperatorQualifica);
+            if (['Medico', 'Direttore Sanitario'].includes(window.activeOperatorQualifica) || window.activeOperatorRole === 'admin') {
+                document.body.setAttribute('data-med-access', 'true');
+            }
+
+            if (window.globalSelectedPatient) {
+                window.handlePatientChange(window.globalSelectedPatient);
+            }
+        };
+    </script>
+</body>
+</html>

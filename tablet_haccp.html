@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NVS Tablet - HACCP & Autocontrollo Touch</title>
+
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --box-bg: #ffffff;
+            --primary-color: #0f766e;
+            --secondary-color: #115e59;
+            --text-main: #0f172a;
+            --text-light: #475569;
+            --border-color: #cbd5e1;
+            --error-color: #e11d48;
+            --warning-color: #d97706;
+            --success-color: #059669;
+            --cook-color: #ea580c;
+            --blast-color: #0284c7;
+            --radius: 8px;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-main);
+            font-size: 15px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            user-select: none;
+        }
+
+        /* SCHERMATA BLOCCO ACCESSO NON AUTORIZZATO (MEDICO / INF / OSS) */
+        #haccpAccessDenied {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #0f172a;
+            color: white;
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            padding: 24px;
+        }
+
+        .tablet-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 12px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .tablet-title { font-size: 1.15em; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        
+        .op-pill-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.4);
+            color: white;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-nav-home {
+            background: rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 7px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+
+        .tablet-tabs-bar {
+            display: flex;
+            background: #e2e8f0;
+            padding: 6px 10px;
+            gap: 6px;
+            overflow-x: auto;
+            position: sticky;
+            top: 55px;
+            z-index: 990;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab-btn {
+            flex: 1 0 auto;
+            min-height: 48px;
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: 1px solid #94a3b8;
+            background: #ffffff;
+            color: var(--text-light);
+            font-weight: 700;
+            font-size: 0.92em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .tab-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--secondary-color);
+            box-shadow: 0 2px 6px rgba(15, 118, 110, 0.35);
+        }
+
+        .tablet-container {
+            max-width: 1200px;
+            width: 96%;
+            margin: 12px auto;
+            flex-grow: 1;
+            padding-bottom: 30px;
+        }
+
+        .touch-workspace { display: none; }
+        .touch-workspace.active { display: block; }
+
+        .touch-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+
+        .touch-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .touch-card-header h3 { margin: 0; font-size: 1.15em; color: var(--primary-color); display: flex; align-items: center; gap: 8px; }
+
+        .btn-touch {
+            min-height: 48px;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.95em;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: white;
+        }
+        .btn-cook { background: var(--cook-color); }
+        .btn-blast { background: var(--blast-color); }
+        .btn-teal { background: var(--primary-color); }
+        .btn-green { background: var(--success-color); }
+        .btn-doc { background: #475569; }
+
+        .presets-row { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 10px 0; margin-bottom: 8px; }
+        .pill-preset {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.88em;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .touch-form-group { margin-bottom: 12px; }
+        .touch-form-group label { display: block; margin-bottom: 5px; font-weight: 700; font-size: 0.9em; color: var(--text-main); }
+        .touch-input, .touch-select {
+            width: 100%;
+            min-height: 46px;
+            padding: 8px 12px;
+            font-size: 1em;
+            border: 1px solid #94a3b8;
+            border-radius: 6px;
+            background: #ffffff;
+            color: var(--text-main);
+            font-family: inherit;
+        }
+
+        .touch-checklist {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .touch-check-item {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 12px 14px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+        .touch-check-item input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--primary-color); }
+
+        .touch-signature-box {
+            background: #ffffff;
+            border: 2px dashed #94a3b8;
+            border-radius: 6px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .touch-canvas {
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            background: #ffffff;
+            touch-action: none;
+            cursor: crosshair;
+            width: 100%;
+            max-width: 380px;
+            height: 100px;
+            display: block;
+        }
+
+        .touch-table { width: 100%; border-collapse: collapse; font-size: 0.9em; background: #ffffff; }
+        .touch-table th, .touch-table td { border: 1px solid var(--border-color); padding: 10px 12px; text-align: left; vertical-align: middle; }
+        .touch-table th { background: var(--primary-color); color: white; font-weight: 700; text-transform: uppercase; font-size: 0.85em; }
+        .touch-table tr:nth-child(even) { background: #f8fafc; }
+
+        .badge-status { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 4px; font-weight: 800; font-size: 0.82em; }
+        .status-ok { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .status-err { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 40000; }
+        .toast { background: #0f172a; color: #fff; padding: 12px 20px; border-radius: 6px; font-weight: bold; margin-top: 10px; opacity: 0; transition: opacity 0.3s; }
+        .toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+
+    <div id="haccpAccessDenied">
+        <h2 style="font-size:2em; margin-bottom:10px;">🛡️ Modulo Autocontrollo HACCP</h2>
+        <p style="font-size:1.1em; color:#94a3b8; max-width:500px; margin-bottom:20px;">
+            L'accesso al modulo HACCP & Cucina è riservato agli addetti ai <strong>Servizi Generali (Cucina/Pulizie/Lavanderia)</strong> e all'<strong>Amministrazione</strong>.
+        </p>
+        
+    </div>
+
+    <div class="tablet-header">
+        <div class="tablet-title">
+            <span>🛡️ NVS Touch | HACCP & Cucina</span>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <button id="btnOpPill" class="op-pill-btn">
+                👤 <span id="lblOpName">Caricamento...</span>
+            <button class="nav-btn" onclick="window.location.href='index.html'">🏠 Home</button>
+        </div>
+    </div>
+
+    <div class="tablet-tabs-bar">
+        <button class="tab-btn active" onclick="window.switchTab('cottura', this)">🍳 Cottura & Abbattimento CCP</button>
+        <button class="tab-btn" onclick="window.switchTab('abbattitore', this)">🧊 Pulizia Abbattitore Mod. 06</button>
+        <button class="tab-btn" onclick="window.switchTab('temp', this)">🌡️ Temperature Frigo/Celle</button>
+        <button class="tab-btn" onclick="window.switchTab('sanif', this)">✨ Sanificazione Aree</button>
+        <button class="tab-btn" onclick="window.switchTab('pulizie', this)">🧹 Pulizie Giornaliere</button>
+    </div>
+
+    <div class="tablet-container">
+        <!-- 1. COTTURA & ABBATTIMENTO RAPIDO -->
+        <div id="tab-cottura" class="touch-workspace active">
+            <div class="touch-card" style="border-top:4px solid var(--cook-color);">
+                <div class="touch-card-header">
+                    <h3 style="color:var(--cook-color);">🍳 Registrazione Cottura & Abbattimento al Cuore (CCP)</h3>
+                    <button class="btn-touch btn-cook" style="min-height:40px; padding:6px 14px; font-size:0.85em;" onclick="window.compilaCotturaConformeTouch()">🎯 Compila Esempio Conforme</button>
+                </div>
+
+                <div class="presets-row">
+                    <span style="font-weight:700; align-self:center; font-size:0.85em; color:#64748b;">Preparazioni Rapide:</span>
+                    <button type="button" class="pill-preset" onclick="document.getElementById('cAlimento').value='Arrosto di Tacchino'; document.getElementById('cTempCot').value=78.5;">🍗 Arrosto Tacchino</button>
+                    <button type="button" class="pill-preset" onclick="document.getElementById('cAlimento').value='Lasagne al Forno'; document.getElementById('cTempCot').value=82.0;">🍝 Lasagne</button>
+                    <button type="button" class="pill-preset" onclick="document.getElementById('cAlimento').value='Spezzatino con Patate'; document.getElementById('cTempCot').value=80.0;">🥘 Spezzatino</button>
+                    <button type="button" class="pill-preset" onclick="document.getElementById('cAlimento').value='Passato di Verdure Frullato'; document.getElementById('cTempCot').value=85.0;">🥣 Passato Disfagici</button>
+                </div>
+
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
+                    <div class="touch-form-group">
+                        <label>Alimento / Pietanza *</label>
+                        <input type="text" id="cAlimento" class="touch-input" placeholder="Es. Arrosto di Vitello">
+                    </div>
+                    <div class="touch-form-group">
+                        <label>Lotto Ingrediente / ID</label>
+                        <input type="text" id="cLotto" class="touch-input" placeholder="Es. LOT-084">
+                    </div>
+                    <div class="touch-form-group">
+                        <label>Temp. Cuore Fine Cottura (°C) *</label>
+                        <input type="number" step="0.1" id="cTempCot" class="touch-input" placeholder="≥ +75.0°C">
+                    </div>
+                    <div class="touch-form-group">
+                        <label>Ora Fine Cottura *</label>
+                        <input type="time" id="cOraFineCot" class="touch-input">
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; background:#fff7ed; border:1px solid #fed7aa; padding:12px; border-radius:6px; margin-bottom:12px;">
+                    <div class="touch-form-group">
+                        <label>Tipo Ciclo Abbattimento *</label>
+                        <select id="cTipoCiclo" class="touch-select">
+                            <option value="POSITIVO">Positivo (+3°C / max 90 min)</option>
+                            <option value="NEGATIVO">Negativo (-18°C / max 240 min)</option>
+                        </select>
+                    </div>
+                    <div class="touch-form-group">
+                        <label>Ora Inizio Abbattimento *</label>
+                        <input type="time" id="cOraInizioAbb" class="touch-input">
+                    </div>
+                    <div class="touch-form-group">
+                        <label>Ora Fine Abbattimento *</label>
+                        <input type="time" id="cOraFineAbb" class="touch-input">
+                    </div>
+                    <div class="touch-form-group">
+                        <label>Temp. Finale Cuore (°C) *</label>
+                        <input type="number" step="0.1" id="cTempFineAbb" class="touch-input" placeholder="≤ +3°C / ≤ -18°C">
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                    <div class="touch-form-group">
+                        <label>Destinazione / Stoccaggio</label>
+                        <select id="cStoccaggio" class="touch-select">
+                            <option value="Cella Carni e Cotti (+0/+3°C)">Cella Carni e Cotti (+0/+3°C)</option>
+                            <option value="Freezer Prodotti Cotti Surgelati (≤ -18°C)">Freezer Prodotti Cotti Surgelati (≤ -18°C)</option>
+                            <option value="Somministrazione Immediata ai Reparti">Somministrazione Immediata ai Reparti</option>
+                        </select>
+                    </div>
+                    <div class="touch-form-group">
+                        <label>Note Operative</label>
+                        <input type="text" id="cNote" class="touch-input" placeholder="Porzionato in gastronorm inox">
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px; border-top:1px dashed #cbd5e1; padding-top:12px;">
+                    <div class="touch-signature-box">
+                        <span style="font-size:0.85em; font-weight:700; color:var(--text-light);">✍️ Firma Touch Operatore Cuoco/OSA:</span>
+                        <canvas id="sigCottura" class="touch-canvas" width="380" height="100"></canvas>
+                        <button type="button" class="btn-touch btn-doc" style="min-height:36px; padding:4px 10px; font-size:0.8em;" onclick="window.clearSig('sigCottura')">Pulisci Tratto</button>
+                    </div>
+                    <button class="btn-touch btn-cook" style="padding:14px 28px; font-size:1.05em;" onclick="window.salvaCotturaTouch()">🍳 Salva Ciclo CCP</button>
+                </div>
+            </div>
+
+            <div class="touch-card">
+                <h4 style="margin:0 0 10px 0; color:var(--cook-color);">📋 Cicli Cottura & Abbattimento di Oggi</h4>
+                <div style="overflow-x:auto;">
+                    <table class="touch-table" id="tblCotturaTouch">
+                        <thead>
+                            <tr><th>Esito CCP</th><th>Ora</th><th>Alimento</th><th>Cottura</th><th>Abbattimento</th><th>Temp Finale</th><th>Op</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. CONTROLLO & PULIZIA ABBATTITORE -->
+        <div id="tab-abbattitore" class="touch-workspace">
+            <div class="touch-card" style="border-top:4px solid var(--blast-color);">
+                <div class="touch-card-header">
+                    <h3 style="color:var(--blast-color);">🧊 Scheda Controllo, Pulizia & Sonda Abbattitore (Mod. 06)</h3>
+                    <div style="display:flex; gap:6px;">
+                        <button class="btn-touch btn-blast" style="min-height:38px; padding:6px 12px; font-size:0.85em;" onclick="window.checkAllBoxes('chkAbbList', true)">☑️ Seleziona Tutte</button>
+                    </div>
+                </div>
+
+                <div id
