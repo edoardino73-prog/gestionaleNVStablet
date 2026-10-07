@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NVS Masterpiece - Piani Presidi & Assorbenza Tablet (10/11")</title>
+
+    <style>
+        :root {
+            --bg-body: #f1f5f9;
+            --surface: #ffffff;
+            --primary: #0d9488;
+            --primary-dark: #0f766e;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border: #cbd5e1;
+            --danger: #e11d48;
+            --warning: #d97706;
+            --success: #059669;
+            --pres-color: #d97706;
+            --pres-dark: #b45309;
+            --radius: 8px;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0; padding: 0;
+            background: var(--bg-body);
+            color: var(--text-dark);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            font-size: 14px;
+        }
+
+        /* HEADER TOUCH */
+        .topbar {
+            background: var(--primary-dark);
+            color: #ffffff;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .topbar-brand { font-size: 1.15em; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        .topbar-btns { display: flex; gap: 8px; align-items: center; }
+        .nav-btn {
+            background: rgba(255,255,255,0.18);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #ffffff;
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.85em;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex; align-items: center;
+        }
+
+        /* LAYOUT SPLIT A DUE COLONNE */
+        .tablet-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* COLONNA SINISTRA: OSPITI */
+        .sidebar-guests {
+            width: 32%;
+            max-width: 360px;
+            min-width: 270px;
+            background: #ffffff;
+            border-right: 2px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .search-area {
+            padding: 10px 12px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border);
+        }
+        .search-area input {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 0.95em;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            outline: none;
+        }
+        .search-area input:focus { border-color: var(--primary); }
+
+        .guests-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .touch-guest-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+        .touch-guest-card.gender-m { border-left: 5px solid #0284c7; background: #f0f9ff; }
+        .touch-guest-card.gender-f { border-left: 5px solid #db2777; background: #fdf2f8; }
+        .touch-guest-card.active {
+            border-color: var(--primary);
+            background: #ccfbf1 !important;
+            box-shadow: 0 2px 6px rgba(13,148,136,0.25);
+            transform: scale(0.99);
+        }
+        .guest-avatar {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5em;
+            overflow: hidden;
+            flex-shrink: 0;
+            border: 1px solid var(--border);
+        }
+        .guest-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .guest-info h4 { margin: 0; font-size: 0.95em; font-weight: 700; color: var(--text-dark); }
+        .guest-info small { color: var(--text-muted); font-size: 0.8em; }
+
+        /* COLONNA DESTRA: WORKSPACE PIANI PRESIDI */
+        .workspace-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: #f8fafc;
+        }
+
+        .patient-banner {
+            background: #ffffff;
+            border-bottom: 2px solid var(--border);
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .pb-name { font-size: 1.15em; font-weight: 800; color: var(--primary-dark); }
+        .pb-sub { font-size: 0.85em; color: var(--text-muted); }
+
+        .content-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+        }
+
+        /* CARDS TOUCH */
+        .card-touch {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .card-touch h4 {
+            margin: 0 0 10px 0;
+            font-size: 1.05em;
+            color: var(--pres-dark);
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .btn-full {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 800;
+            color: #ffffff;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: opacity 0.15s;
+        }
+        .btn-full:active { opacity: 0.85; }
+
+        .quick-btn {
+            padding: 6px 10px;
+            background: #f1f5f9;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--text-dark);
+        }
+        .quick-btn:hover { background: #e2e8f0; }
+        .quick-btn.active {
+            background: var(--pres-dark) !important;
+            color: #ffffff !important;
+            border-color: var(--pres-dark) !important;
+        }
+
+        .pres-card-item {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-left: 5px solid var(--pres-color);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .pres-card-item.scaduto { border-left-color: var(--danger); background: #fef2f2; }
+        .pres-card-item.in-scadenza { border-left-color: var(--warning); background: #fffbeb; }
+
+        .badge-status {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .bs-valido { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .bs-scadenza { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .bs-scaduto { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        #toast-box {
+            position: fixed; bottom: 20px; right: 20px;
+            background: #0f172a; color: #ffffff;
+            padding: 10px 18px; border-radius: 6px; font-weight: 700;
+            z-index: 100000; opacity: 0; transition: opacity 0.2s; pointer-events: none;
+        }
+        #toast-box.show { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div id="toast-box"></div>
+
+    <!-- TOPBAR SUPERIORE -->
+    <div class="topbar">
+        <div class="topbar-brand">
+            <span>📦 NVS Tablet - Presidi & Piani ASL</span>
+            <small style="font-weight:normal; opacity:0.85;">[10/11"]</small>
+        </div>
+        <div class="topbar-btns">
+            <span id="badgeOpTop" style="font-weight:700; background:rgba(255,255,255,0.2); padding:5px 10px; border-radius:4px; font-size:0.85em;">👤 Op</span>
+            <button class="nav-btn" onclick="window.location.href='tablet_diari.html'">📖 Diari Reparto</button>
+            <button class="nav-btn" onclick="window.location.href='tablet_hub.html'">📱 Hub</button>
+            <button class="nav-btn" onclick="window.location.href='index_2.html'">🖥️ Desktop</button>
+        </div>
+    </div>
+
+    <div class="tablet-layout">
+        
+        <!-- PANE OSPITI CON ETÀ DINAMICA -->
+        <div class="sidebar-guests">
+            <div class="search-area">
+                <input type="text" id="guestSearch" placeholder="🔍 Cerca paziente, età, stanza..." oninput="window.renderGuests()">
+            </div>
+            <div class="guests-scroll" id="guestList">Caricamento elenco...</div>
+        </div>
+
+        <!-- PANE OPERATIVO PRESIDI -->
+        <div class="workspace-main">
+            
+            <div class="patient-banner">
+                <div>
+                    <div class="pb-name" id="bannerGuestName">Nessun ospite selezionato</div>
+                    <div class="pb-sub" id="bannerGuestMeta">Tocca un ospite dall'elenco a sinistra</div>
+                </div>
+                <div id="bannerBadges" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+            </div>
+
+            <div class="content-scroll">
+                
+                <!-- BOX REGISTRAZIONE / RINNOVO PIANO (EDITABILE DA MEDICO / INFERMIERE / ADMIN) -->
+                <div id="boxEditPiano" class="card-touch" style="border-top:4px solid var(--pres-color);">
+                    <h4>
+                        <span>📦 Registra / Rinnova Piano Presidi & Dispositivi ASL</span>
+                        <span style="font-size:0.75em; color:var(--text-muted); font-weight:normal;">Editabile da Inf. / Medico</span>
+                    </h4>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+                        <div>
+                            <label style="font-weight:700; font-size:0.85em;">Categoria Presidio *</label>
+                            <select id="presCategoria" onchange="window.aggiornaSuggerimentiPresidio()" style="width:100%; padding:10px; border:2px solid var(--border); border-radius:6px; font-weight:bold;">
+                                <option value="Assorbenza (Pannoloni & Traverse)">Assorbenza (Pannoloni & Traverse)</option>
+                                <option value="Cateterismo & Vie Urinarie">Cateterismo & Vie Urinarie (Foley / Sacche)</option>
+                                <option value="Nutrizione Enterale & Accessi (SNG/PEG)">Nutrizione Enterale & Accessi (SNG/PEG)</option>
+                                <option value="Medicazioni Avanzate per Lesioni">Medicazioni Avanzate per Lesioni</option>
+                                <option value="Apparato Respiratorio (O2, Cannule, Aspirazione)">Apparato Respiratorio (O2, Cannule)</option>
+                                <option value="Ausili Antidecubito / Protesica">Ausili Antidecubito / Protesica</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-weight:700; font-size:0.85em;">Specifica Presidio / Modello / Taglia *</label>
+                            <input type="text" id="presDescrizione" list="suggerimentiPresidiList" placeholder="Es. Pannoloni a mutandina L - Notte" autocomplete="off" style="width:100%; padding:10px; border:2px solid var(--border); border-radius:6px;">
+                            <datalist id="suggerimentiPresidiList"></datalist>
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:10px;">
+                        <div>
+                            <label style="font-weight:700; font-size:0.85em;">Fabbisogno Periodico</label>
+                            <input type="text" id="presFabbisogno" placeholder="Es. 90 pz/mese, 4 cateteri..." style="width:100%; padding:10px; border:2px solid var(--border); border-radius:6px;">
+                        </div>
+                        <div>
+                            <label style="font-weight:700; font-size:0.85em;">N° Protocollo ASL</label>
+                            <input type="text" id="presProtocollo" placeholder="Es. PT-2026/0445-TR" style="width:100%; padding:10px; border:2px solid var(--border); border-radius:6px;">
+                        </div>
+                        <div>
+                            <label style="font-weight:700; font-size:0.85em;">Distretto Erogatore</label>
+                            <input type="text" id="presDistretto" value="USL Umbria 2 - Distretto Spoleto" style="width:100%; padding:10px; border:2px solid var(--border); border-radius:6px;">
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:6px;">
+                        <div>
+                            <label style="font-weight:700; font-size:0.85em;">Data Inizio Validità *</label>
+                            <input type="date" id="presDataInizio" style="width:100%; padding:10px; border:2px solid var(--border); border-radius:6px;">
+                        </div>
+                        <div>
+                            <label style="font-weight:700; font-size:0.85em;">Data Scadenza Piano *</label>
+                            <input type="date" id="presDataScadenza" style="width:100%; padding:10px; border:2px solid var(--border); border-radius:6px;">
+                        </div>
+                    </div>
+
+                    <!-- TASTI RAPIDI CALCOLO SCADENZA TOUCH -->
+                    <div style="display:flex; gap:6px; align-items:center; margin-bottom:10px; flex-wrap:wrap;">
+                        <span style="font-size:0.8em; font-weight:700; color:var(--text-muted);">Calcolo rapido da data inizio:</span>
+                        <button type="button" class="quick-btn" onclick="window.calcolaScadenza(3)">+3 Mesi</button>
+                        <button type="button" class="quick-btn" onclick="window.calcolaScadenza(6)">+6 Mesi</button>
+                        <button type="button" class="quick-btn" onclick="window.calcolaScadenza(12)">+12 Mesi (1 Anno)</button>
+                    </div>
+
+                    <div style="margin-bottom:10px;">
+                        <label style="font-weight:700; font-size:0.85em;">Note Assistenziali / Consegna</label>
+                        <input type="text" id="presNote" placeholder="Tollerabilità cutanea, taglia variata, consegna al piano..." style="width:100%; padding:10px; border:2px solid var(--border); border-radius:6px;">
+                    </div>
+
+                    <button class="btn-full" style="background:var(--pres-color);" onclick="window.salvaPianoPresidio()">
+                        💾 Salva / Rinnova Piano Presidi
+                    </button>
+                </div>
+
+                <!-- BOX PER OSS (SOLA LETTURA) -->
+                <div id="boxReadOnlyOSS" class="card-touch" style="display:none; background:#f8fafc; text-align:center; padding:16px;">
+                    <span style="font-weight:bold; color:var(--text-muted); font-size:0.95em;">
+                        🔒 Consultazione Piani Presidi abilitata a tutti gli operatori.<br>
+                        <small>L'inserimento e la modifica del piano ASL sono riservati al Personale Infermieristico o Medico.</small>
+                    </span>
+                </div>
+
+                <!-- TABELLA / REGISTRO DEI PIANI CON FILTRI RAPIDI -->
+                <div class="card-touch">
+                    <h4>
+                        <span>📋 Piani Presidi Attivi & Forniture ASL</span>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <button class="quick-btn active" id="btnFilterTutti" onclick="window.filtraPiani('tutti')">Tutti</button>
+                            <button class="quick-btn" id="btnFilterScadenza" onclick="window.filtraPiani('scadenza')" style="background:#fffbeb; color:#92400e; border-color:#fde68a;">⚠️ Scadenza / Scaduti</button>
+                            <button class="quick-btn" id="btnFilterOspite" onclick="window.filtraPiani('ospite')">👤 Solo Questo Ospite</button>
+                        </div>
+                    </h4>
+
+                    <div id="pianiListContainer" style="margin-top:10px;">Caricamento piani presidi...</div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT FIREBASE v10.8 CON CARICAMENTO COMPLETO OSPITI & GESTIONE PIANI -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, addDoc, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
+            authDomain: "gestione-visite-b445b.firebaseapp.com", 
+            projectId: "gestione-visite-b445b", 
+            storageBucket: "gestione-visite-b445b.firebasestorage.app", 
+            messagingSenderId: "720937824810", 
+            appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.dbOspiti = [];
+        window.dbPresidi = [];
+        window.dbClinica = {};
+        window.selectedGuest = sessionStorage.getItem("globalSelectedPatient") || "";
+        window.filtroAttivo = 'tutti';
+
+        window.activeOp = sessionStorage.getItem("activeOperator") || localStorage.getItem("activeOperator") || "Operatore";
+        window.activeRole = sessionStorage.getItem("activeRole") || "user";
+        window.activeQualifica = sessionStorage.getItem("activeQualifica") || "OSS";
+
+        window.showToast = (msg) => {
+            const t = document.getElementById('toast-box');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        };
+
+        window.formatDateSafe = (d) => {
+            if (!d) return '-';
+            if (typeof d === 'string' && d.includes('-')) return d.split('-').reverse().join('/');
+            return d;
+        };
+
+        window.getTimestamp = () => {
+            const n = new Date();
+            return `${n.toLocaleDateString('it-IT')} alle ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}`;
+        };
+
+        // CALCOLO DINAMICO ETÀ
+        window.calcolaEta = (dobStr) => {
+            if (!dobStr) return '';
+            let birthDate;
+            if (typeof dobStr === 'string' && dobStr.includes('/')) {
+                const parts = dobStr.split('/');
+                if (parts.length === 3) birthDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+            } else {
+                birthDate = new Date(dobStr);
+            }
+            if (!birthDate || isNaN(birthDate.getTime())) return '';
+            
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+            return (age >= 0 && age < 130) ? `${age} anni` : '';
+        };
+
+        // SUGGERIMENTI RAPIDI PER CATEGORIA
+        const SUGGERIMENTI_MAP = {
+            "Assorbenza (Pannoloni & Traverse)": [
+                "Pannoloni a mutandina con adesivi - Taglia M",
+                "Pannoloni a mutandina con adesivi - Taglia L",
+                "Pannoloni a mutandina con adesivi - Taglia XL",
+                "Pants / Pull-up a mutandina elastica - Taglia M",
+                "Pants / Pull-up a mutandina elastica - Taglia L",
+                "Traverse salvamaterasso 60x90 cm",
+                "Pannoloni sagomati anatomici Extra"
+            ],
+            "Cateterismo & Vie Urinarie": [
+                "Catetere vescicale Foley 2 vie lattice Ch 16",
+                "Catetere vescicale Foley 2 vie silicone Ch 16",
+                "Catetere vescicale Foley 2 vie silicone Ch 18",
+                "Sacche urina da gamba 750ml con valvola",
+                "Sacche urina da letto 2000ml a circuito chiuso",
+                "Guaine urinarie adesive esterne maschio"
+            ],
+            "Nutrizione Enterale & Accessi (SNG/PEG)": [
+                "Sacca nutrizione enterale ipercalorica 500ml",
+                "Deflussori per pompa nutrizione enterale",
+                "Siringhe per cono catetere Guyon 60ml",
+                "Sondino naso-gastrico Poliuretano Ch 12"
+            ],
+            "Medicazioni Avanzate per Lesioni": [
+                "Idrocolloidi sottili 10x10 cm",
+                "Schiume di poliuretano idrocellulare sacrale",
+                "Idrogel amorfo in tubo per debridement",
+                "Alginato di calcio con argento",
+                "Garze grasse non aderenti connettivina"
+            ],
+            "Apparato Respiratorio (O2, Cannule, Aspirazione)": [
+                "Cannule nasali per ossigenoterapia adulti",
+                "Sondini per broncoaspirazione Ch 14",
+                "Cannula tracheostomica cuffiata fenestrata",
+                "Tubi e raccordi per ossigenatore / concentratore"
+            ],
+            "Ausili Antidecubito / Protesica": [
+                "Materasso a pressione alternata con compressore",
+                "Cuscino antidecubito a celle d'aria",
+                "Talloniere protettive in fibra cava siliconata"
+            ]
+        };
+
+        window.aggiornaSuggerimentiPresidio = () => {
+            const cat = document.getElementById('presCategoria')?.value || "";
+            const dl = document.getElementById('suggerimentiPresidiList');
+            if (!dl) return;
+            dl.innerHTML = '';
+            const items = SUGGERIMENTI_MAP[cat] || [];
+            items.forEach(it => {
+                const opt = document.createElement('option');
+                opt.value = it;
+                dl.appendChild(opt);
+            });
+        };
+
+        // CALCOLO SCADENZA DATA
+        window.calcolaScadenza = (mesi) => {
+            const dtInizioInp = document.getElementById('presDataInizio');
+            const dtScadInp = document.getElementById('presDataScadenza');
+            let d = dtInizioInp.value ? new Date(dtInizioInp.value) : new Date();
+            if (isNaN(d.getTime())) d = new Date();
+            
+            d.setMonth(d.getMonth() + mesi);
+            dtScadInp.value = d.toISOString().slice(0, 10);
+            window.showToast(`Calcolata scadenza a +${mesi} mesi`);
+        };
+
+        // RENDERING OSPITI (CORRETTO E REAL-TIME)
+        window.renderGuests = () => {
+            const c = document.getElementById('guestList');
+            if (!c) return;
+
+            const search = (document.getElementById('guestSearch')?.value || '').toLowerCase().trim();
+            const attivi = window.dbOspiti
+                .filter(g => !g.decesso && !g.dimissione)
+                .sort((a,b) => (a.name||'').localeCompare(b.name||''));
+
+            if (attivi.length === 0) {
+                c.innerHTML = '<p style="padding:15px; color:#64748b; text-align:center;">Nessun ospite attivo trovato nel sistema.</p>';
+                return;
+            }
+
+            c.innerHTML = '';
+            attivi.forEach(g => {
+                const eta = window.calcolaEta(g.dob);
+                
+                if (search) {
+                    const matchNome = (g.name || '').toLowerCase().includes(search);
+                    const matchStanza = (g.room || '').toLowerCase().includes(search);
+                    const matchEta = eta && eta.toLowerCase().includes(search);
+                    const matchCf = (g.cf || '').toLowerCase().includes(search);
+                    if (!matchNome && !matchStanza && !matchEta && !matchCf) return;
+                }
+
+                const sesso = (g.sesso || '').trim().toUpperCase();
+                const isM = (sesso === 'M' || sesso === 'MASCHIO');
+                const isF = (sesso === 'F' || sesso === 'FEMMINA');
+                const genderClass = isM ? 'gender-m' : (isF ? 'gender-f' : '');
+
+                const card = document.createElement('div');
+                card.className = `touch-guest-card ${genderClass} ${g.name === window.selectedGuest ? 'active' : ''}`;
+                card.onclick = () => window.selectGuest(g.name);
+
+                const avatarHtml = g.photo 
+                    ? `<img src="${g.photo}">` 
+                    : `<span>${isF ? '🌸' : (isM ? '👤' : '👤')}</span>`;
+
+                card.innerHTML = `
+                    <div class="guest-avatar">${avatarHtml}</div>
+                    <div class="guest-info" style="flex:1; min-width:0; overflow:hidden;">
+                        <h4 style="text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${g.name}</h4>
+                        <small>Stanza ${g.room || '-'} ${eta ? '• ' + eta : ''}</small>
+                    </div>
+                `;
+                c.appendChild(card);
+            });
+
+            // Se nessun ospite è selezionato, seleziona il primo disponibile
+            if (!window.selectedGuest && attivi.length > 0) {
+                window.selectGuest(attivi[0].name);
+            }
+        };
+
+        // SELEZIONE OSPITE
+        window.selectGuest = (name) => {
+            window.selectedGuest = name;
+            sessionStorage.setItem("globalSelectedPatient", name);
+
+            const g = window.dbOspiti.find(x => x.name === name) || {};
+            const eta = window.calcolaEta(g.dob);
+
+            document.getElementById('bannerGuestName').innerText = name || "Nessun ospite selezionato";
+            document.getElementById('bannerGuestMeta').innerText = `Camera: Stanza ${g.room || '-'} | CF: ${g.cf || '-'} | MMG: ${g.mmg || '-'} ${eta ? ' | Età: ' + eta : ''}`;
+
+            // Badges clinici
+            const cInfo = window.dbClinica[name] || {};
+            let badgesHtml = '';
+            if (cInfo.infezione) badgesHtml += `<span style="background:#fee2e2; color:#991b1b; padding:2px 8px; border-radius:4px; font-weight:bold; font-size:0.75em;">☣ ${cInfo.infezione}</span>`;
+            if (cInfo.disfagia) badgesHtml += `<span style="background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:4px; font-weight:bold; font-size:0.75em;">🥣 Disfagico</span>`;
+            document.getElementById('bannerBadges').innerHTML = badgesHtml;
+
+            // Aggiorna evidenziazione
+            document.querySelectorAll('.touch-guest-card').forEach(c => {
+                c.classList.remove('active');
+                if (c.querySelector('h4') && c.querySelector('h4').innerText === name) {
+                    c.classList.add('active');
+                }
+            });
+
+            window.renderPiani();
+        };
+
+        // GESTIONE FILTRI PIANI
+        window.filtraPiani = (f) => {
+            window.filtroAttivo = f;
+            document.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
+            if (f === 'tutti') document.getElementById('btnFilterTutti').classList.add('active');
+            else if (f === 'scadenza') document.getElementById('btnFilterScadenza').classList.add('active');
+            else if (f === 'ospite') document.getElementById('btnFilterOspite').classList.add('active');
+            window.renderPiani();
+        };
+
+        // RENDERING PIANI PRESIDI
+        window.renderPiani = () => {
+            const container = document.getElementById('pianiListContainer');
+            if (!container) return;
+
+            const today = new Date(); today.setHours(0,0,0,0);
+            let lista = [...window.dbPresidi];
+
+            if (window.filtroAttivo === 'ospite' && window.selectedGuest) {
+                lista = lista.filter(p => p.ospite === window.selectedGuest);
+            } else if (window.filtroAttivo === 'scadenza') {
+                lista = lista.filter(p => {
+                    if (!p.dataScadenza) return false;
+                    const exp = new Date(p.dataScadenza + 'T00:00:00');
+                    const diffDays = Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
+                    return diffDays <= 30;
+                });
+            }
+
+            if (lista.length === 0) {
+                container.innerHTML = '<p style="padding:15px; color:#64748b; text-align:center;">Nessun piano presidio trovato per i filtri selezionati.</p>';
+                return;
+            }
+
+            // Ordina per scadenza più vicina
+            lista.sort((a,b) => new Date(a.dataScadenza || '2099-01-01') - new Date(b.dataScadenza || '2099-01-01'));
+
+            container.innerHTML = '';
+            lista.forEach(p => {
+                let badgeClass = "bs-valido";
+                let badgeText = "🟢 ATTIVO";
+                let cardClass = "";
+
+                if (p.dataScadenza) {
+                    const exp = new Date(p.dataScadenza + 'T00:00:00');
+                    const diffDays = Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
+                    if (diffDays < 0) {
+                        badgeClass = "bs-scaduto";
+                        badgeText = `🔴 SCADUTO DA ${Math.abs(diffDays)} GG`;
+                        cardClass = "scaduto";
+                    } else if (diffDays <= 30) {
+                        badgeClass = "bs-scadenza";
+                        badgeText = `🟡 SCADE TRA ${diffDays} GG`;
+                        cardClass = "in-scadenza";
+                    }
+                }
+
+                const canEdit = (window.activeRole === 'admin' || window.activeQualifica === 'Infermiere' || window.activeQualifica === 'Medico' || window.activeQualifica === 'Direttore Sanitario');
+
+                container.innerHTML += `
+                    <div class="pres-card-item ${cardClass}">
+                        <div style="flex:1;">
+                            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px;">
+                                <strong style="font-size:1em; color:var(--text-dark);">${p.ospite}</strong>
+                                <span class="badge-status ${badgeClass}">${badgeText}</span>
+                                <small style="background:#e2e8f0; padding:2px 6px; border-radius:4px; font-weight:700;">${p.categoria}</small>
+                            </div>
+                            <div style="font-size:0.9em; font-weight:700; color:var(--primary-dark);">${p.descrizione}</div>
+                            <div style="font-size:0.8em; color:var(--text-muted); margin-top:2px;">
+                                Fabbisogno: <strong>${p.fabbisogno || 'N/D'}</strong> | Prot. ASL: <strong>${p.protocollo || '-'}</strong> | Distretto: <strong>${p.distretto || '-'}</strong>
+                            </div>
+                            <div style="font-size:0.8em; color:var(--text-muted);">
+                                Validità: dal <strong>${window.formatDateSafe(p.dataInizio)}</strong> al <strong style="color:${cardClass === 'scaduto' ? '#e11d48' : '#0f172a'};">${window.formatDateSafe(p.dataScadenza)}</strong>
+                                ${p.note ? ' • <em>Note: ' + p.note + '</em>' : ''}
+                            </div>
+                        </div>
+                        ${canEdit ? `
+                            <div style="display:flex; flex-direction:column; gap:4px; flex-shrink:0;">
+                                <button class="quick-btn" onclick="window.eliminaPiano('${p.id}')" style="color:#e11d48; border-color:#fca5a5;">🗑️ Rimuovi</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+        };
+
+        // SALVATAGGIO PIANO PRESIDIO
+        window.salvaPianoPresidio = async () => {
+            const guest = window.selectedGuest;
+            if (!guest) return window.showToast("⚠️ Seleziona prima un ospite!");
+
+            const cat = document.getElementById('presCategoria').value;
+            const desc = document.getElementById('presDescrizione').value.trim();
+            const fabb = document.getElementById('presFabbisogno').value.trim();
+            const prot = document.getElementById('presProtocollo').value.trim();
+            const dist = document.getElementById('presDistretto').value.trim();
+            const dInizio = document.getElementById('presDataInizio').value;
+            const dScadenza = document.getElementById('presDataScadenza').value;
+            const note = document.getElementById('presNote').value.trim();
+
+            if (!desc || !dInizio || !dScadenza) {
+                return window.showToast("⚠️ Specifica del presidio, Data Inizio e Data Scadenza sono obbligatorie!");
+            }
+
+            const payload = {
+                ospite: guest,
+                categoria: cat,
+                descrizione: desc,
+                fabbisogno: fabb,
+                protocollo: prot,
+                distretto: dist,
+                dataInizio: dInizio,
+                dataScadenza: dScadenza,
+                note: note,
+                inseritoDa: window.activeOp,
+                qualificaOp: window.activeQualifica,
+                timestamp: Date.now()
+            };
+
+            try {
+                await addDoc(collection(db, "presidi"), payload);
+
+                // Log forense di audit
+                await addDoc(collection(db, "audit_trail"), {
+                    timestamp: Date.now(),
+                    dataOraStr: window.getTimestamp(),
+                    operatore: window.activeOp,
+                    qualifica: window.activeQualifica,
+                    categoria: "PAI",
+                    azione: "Inserimento Piano Presidi",
+                    ospite: guest,
+                    dettaglio: `Registrato piano presidio ASL: ${cat} - ${desc} (Scadenza: ${dScadenza})`
+                });
+
+                document.getElementById('presDescrizione').value = '';
+                document.getElementById('presFabbisogno').value = '';
+                document.getElementById('presProtocollo').value = '';
+                document.getElementById('presNote').value = '';
+                window.showToast("✅ Piano Presidio Salvato con Successo!");
+            } catch(e) {
+                console.error("Errore salvataggio presidio:", e);
+                window.showToast("❌ Errore durante il salvataggio.");
+            }
+        };
+
+        // ELIMINAZIONE PIANO
+        window.eliminaPiano = async (id) => {
+            if (!confirm("Sei sicuro di voler eliminare questo piano presidi?")) return;
+            try {
+                await deleteDoc(doc(db, "presidi", id));
+                window.showToast("Piano eliminato.");
+            } catch(e) {
+                window.showToast("Errore durante l'eliminazione.");
+            }
+        };
+
+        // CONTROLLO PERMESSI RUOLO (OSS vs SANITARI)
+        window.applicaPermessiRuolo = () => {
+            const isOss = (window.activeQualifica === 'OSS' || window.activeQualifica.includes('Servizi Generali'));
+            const boxEdit = document.getElementById('boxEditPiano');
+            const boxRead = document.getElementById('boxReadOnlyOSS');
+
+            if (isOss && window.activeRole !== 'admin') {
+                if (boxEdit) boxEdit.style.display = 'none';
+                if (boxRead) boxRead.style.display = 'block';
+            } else {
+                if (boxEdit) boxEdit.style.display = 'block';
+                if (boxRead) boxRead.style.display = 'none';
+            }
+        };
+
+        // LISTENERS REALTIME FIRESTORE
+        onSnapshot(collection(db, "ospiti"), snap => {
+            window.dbOspiti = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            window.renderGuests();
+        });
+
+        onSnapshot(collection(db, "presidi"), snap => {
+            window.dbPresidi = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            window.renderPiani();
+        });
+
+        onSnapshot(collection(db, "cartelle_cliniche"), snap => {
+            window.dbClinica = {};
+            snap.forEach(d => { window.dbClinica[d.id] = d.data(); });
+            if (window.selectedGuest) window.selectGuest(window.selectedGuest);
+        });
+
+        window.onload = () => {
+            document.getElementById('badgeOpTop').innerText = `👤 ${window.activeOp} (${window.activeQualifica})`;
+            
+            // Imposta date di default
+            const todayStr = new Date().toISOString().slice(0, 10);
+            if (document.getElementById('presDataInizio')) document.getElementById('presDataInizio').value = todayStr;
+            window.calcolaScadenza(12); // Default 1 anno
+
+            window.aggiornaSuggerimentiPresidio();
+            window.applicaPermessiRuolo();
+        };
+    </script>
+</body>
+</html>
