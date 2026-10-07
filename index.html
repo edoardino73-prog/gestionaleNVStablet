@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NVS Masterpiece - Tablet Hub Launcher</title>
+    <title>Senior Care S.r.l. - Tablet Reparto Hub [Nuova Villa Silvana]</title>
 
     <style>
         :root {
@@ -28,6 +28,8 @@
             --c-cup: #10b981;
             --c-anagrafica: #475569;
             --c-haccp: #ea580c;
+            --c-privacy: #4f46e5;
+            --c-reload: #0284c7;
 
             --radius: 12px;
         }
@@ -57,7 +59,7 @@
             display: none !important;
         }
 
-        /* 2. OSS: SOLO PARAMETRI VITALI, DIARIO OSS, CONSEGNE, RISCHIO & CONTENZIONI, ANAGRAFICA */
+        /* 2. OSS: SOLO PARAMETRI, DIARIO OSS, CONSEGNE, RISCHIO, ANAGRAFICA, NOMINA */
         body[data-qualifica="OSS"] .tile-haccp,
         body[data-qualifica="OSS"] .tile-diari,
         body[data-qualifica="OSS"] .tile-terapia,
@@ -67,7 +69,7 @@
             display: none !important;
         }
 
-        /* 3. SERVIZI GENERALI: SOLO ED ESCLUSIVAMENTE HACCP */
+        /* 3. SERVIZI GENERALI: ESCLUSIVAMENTE HACCP E PROPRIA NOMINA PRIVACY */
         body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .stats-strip,
         body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tile-diari,
         body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tile-oss,
@@ -78,6 +80,7 @@
         body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tile-rischio,
         body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tile-consegne,
         body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tile-cup,
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tile-privacy,
         body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tile-anagrafica {
             display: none !important;
         }
@@ -87,9 +90,9 @@
             background: #ffedd5;
             border: 2px solid #fed7aa;
             color: #7c2d12;
-            padding: 18px 24px;
+            padding: 16px 20px;
             border-radius: var(--radius);
-            margin: 0 auto 20px auto;
+            margin: 0 auto 16px auto;
             max-width: 600px;
             text-align: center;
         }
@@ -98,7 +101,7 @@
         }
 
         body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tiles-grid {
-            grid-template-columns: minmax(280px, 420px) !important;
+            grid-template-columns: minmax(280px, 380px) !important;
             justify-content: center !important;
         }
 
@@ -106,7 +109,7 @@
         .hub-header {
             background: #1e293b;
             border-bottom: 2px solid #334155;
-            padding: 10px 20px;
+            padding: 10px 18px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -118,23 +121,23 @@
             gap: 12px;
         }
         .hub-logo {
-            height: 42px;
+            height: 40px;
             width: auto;
             background: #ffffff;
-            padding: 3px 8px;
+            padding: 2px 6px;
             border-radius: 6px;
             object-fit: contain;
         }
         .hub-title h1 {
             margin: 0;
-            font-size: 1.22em;
+            font-size: 1.18em;
             font-weight: 800;
             color: #ffffff;
             letter-spacing: 0.5px;
         }
         .hub-title p {
-            margin: 2px 0 0 0;
-            font-size: 0.82em;
+            margin: 1px 0 0 0;
+            font-size: 0.8em;
             color: #94a3b8;
         }
 
@@ -142,10 +145,10 @@
             background: rgba(13, 148, 136, 0.2);
             border: 1px solid #0d9488;
             color: #2dd4bf;
-            padding: 7px 15px;
+            padding: 7px 14px;
             border-radius: 20px;
             font-weight: 700;
-            font-size: 0.88em;
+            font-size: 0.86em;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -156,16 +159,16 @@
             background: rgba(13, 148, 136, 0.35);
         }
 
-        /* BARRA STATISTICHE & ALLARMI LIVE */
+        /* STRISCIA STATISTICHE E ALLARMI LIVE */
         .stats-strip {
             background: #162032;
             border-bottom: 1px solid #334155;
-            padding: 7px 20px;
+            padding: 6px 18px;
             display: flex;
-            gap: 16px;
+            gap: 14px;
             overflow-x: auto;
             flex-shrink: 0;
-            font-size: 0.85em;
+            font-size: 0.83em;
         }
         .stat-pill {
             display: inline-flex;
@@ -184,11 +187,11 @@
         .stat-pill.warn strong { background: #d97706; color: #fff; }
         .stat-pill.danger strong { background: #e11d48; color: #fff; }
 
-        /* AREA CENTRALE CON LE PIASTRELLE GRANDI TOUCH */
+        /* AREA CENTRALE CON LE TESSERE GRANDI TOUCH */
         .hub-scroll-area {
             flex: 1;
             overflow-y: auto;
-            padding: 16px 20px;
+            padding: 14px 18px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -197,13 +200,13 @@
         .tiles-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 14px;
-            max-width: 1240px;
+            gap: 12px;
+            max-width: 1260px;
             width: 100%;
             margin: 0 auto;
         }
-        @media (max-width: 1024px) {
-            .tiles-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        @media (max-width: 1100px) {
+            .tiles-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
         }
         @media (max-width: 768px) {
             .tiles-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -212,7 +215,7 @@
         .tile-card {
             background: #ffffff;
             border-radius: var(--radius);
-            padding: 16px 12px;
+            padding: 14px 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -224,11 +227,11 @@
             cursor: pointer;
             position: relative;
             transition: all 0.15s ease;
-            min-height: 120px;
+            min-height: 110px;
             border: 2px solid transparent;
         }
         .tile-card:hover {
-            transform: translateY(-3px);
+            transform: translateY(-2px);
             box-shadow: 0 8px 18px rgba(0,0,0,0.35);
         }
         .tile-card:active {
@@ -236,18 +239,18 @@
         }
 
         .tile-icon {
-            font-size: 2.3em;
-            margin-bottom: 6px;
+            font-size: 2.1em;
+            margin-bottom: 4px;
             line-height: 1;
         }
         .tile-title {
-            font-size: 1em;
+            font-size: 0.95em;
             font-weight: 800;
             margin: 0;
             line-height: 1.2;
         }
         .tile-desc {
-            font-size: 0.76em;
+            font-size: 0.74em;
             color: var(--text-light);
             margin-top: 3px;
             font-weight: 600;
@@ -255,27 +258,24 @@
 
         .tile-badge {
             position: absolute;
-            top: 8px;
-            right: 8px;
+            top: 6px;
+            right: 6px;
             background: #e11d48;
             color: #ffffff;
-            font-size: 0.72em;
+            font-size: 0.7em;
             font-weight: 800;
-            padding: 3px 8px;
+            padding: 2px 7px;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(225, 29, 72, 0.4);
             white-space: nowrap;
         }
 
-        /* ANIMAZIONE PULSANTE PER ALERT TERAPIA */
         @keyframes pulseTerapia {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.7); }
             70% { transform: scale(1.06); box-shadow: 0 0 0 6px rgba(225, 29, 72, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); }
         }
-        .tile-badge.pulse {
-            animation: pulseTerapia 1.8s infinite;
-        }
+        .tile-badge.pulse { animation: pulseTerapia 1.8s infinite; }
 
         /* BORDI TEMATICI DELLE PIASTRELLE */
         .tile-diari { border-color: var(--c-diari); }
@@ -288,18 +288,20 @@
         .tile-consegne { border-color: var(--c-consegne); }
         .tile-cup { border-color: var(--c-cup); }
         .tile-anagrafica { border-color: var(--c-anagrafica); }
+        .tile-privacy { border-color: var(--c-privacy); }
+        .tile-reload { border-color: var(--c-reload); }
         .tile-haccp { border-color: var(--c-haccp); }
 
         /* FOOTER ISTITUZIONALE */
         .hub-footer {
             background: #1e293b;
             border-top: 1px solid #334155;
-            padding: 9px 20px;
+            padding: 8px 18px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-shrink: 0;
-            font-size: 0.85em;
+            font-size: 0.82em;
         }
         .hub-footer a {
             color: #94a3b8;
@@ -308,7 +310,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 5px 12px;
+            padding: 4px 10px;
             border-radius: 6px;
             background: #334155;
             transition: all 0.15s ease;
@@ -318,11 +320,11 @@
             background: #475569;
         }
 
-        /* MODALE OPERATORE CON PIN */
+        /* MODALE OPERATORE CON PIN & PALLINO STATO NOMINA */
         .login-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.88);
             z-index: 50000;
             display: none;
             align-items: center;
@@ -333,18 +335,18 @@
             background: #ffffff;
             color: var(--text-main);
             border-radius: var(--radius);
-            max-width: 440px;
+            max-width: 460px;
             width: 100%;
-            padding: 24px;
+            padding: 22px;
             text-align: center;
             box-shadow: 0 12px 30px rgba(0,0,0,0.4);
         }
         .op-grid-tablet {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
             gap: 8px;
             margin: 14px 0;
-            max-height: 250px;
+            max-height: 260px;
             overflow-y: auto;
         }
         .op-pill {
@@ -355,12 +357,13 @@
             cursor: pointer;
             font-size: 0.82em;
             font-weight: 700;
+            position: relative;
         }
         .op-pill:hover { border-color: var(--primary); background: #f0fdfa; }
 
         #toast-box {
             position: fixed; bottom: 20px; right: 20px;
-            background: #ffffff; color: #0f172a;
+            background: #0f172a; color: #ffffff;
             padding: 10px 18px; border-radius: 6px; font-weight: 700;
             z-index: 100000; opacity: 0; transition: opacity 0.2s; pointer-events: none;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
@@ -374,8 +377,8 @@
     <!-- MODALE CAMBIO OPERATORE TABLET CON PIN -->
     <div id="modalOpOverlay" class="login-overlay">
         <div class="login-card">
-            <h3 style="margin:0; color:var(--primary-dark);">Cambio Operatore in Servizio</h3>
-            <p style="margin:4px 0 12px 0; font-size:0.85em; color:var(--text-light);">Seleziona il tuo profilo:</p>
+            <h3 style="margin:0; color:var(--primary-dark);">Identificazione Operatore in Turno</h3>
+            <p style="margin:4px 0 12px 0; font-size:0.83em; color:var(--text-light);">Seleziona il tuo profilo:</p>
 
             <div id="opSelectStep">
                 <div id="operatorsContainer" class="op-grid-tablet">Caricamento operatori...</div>
@@ -399,7 +402,7 @@
             <img src="logo.png" alt="Nuova Villa Silvana Logo" class="hub-logo">
             <div class="hub-title">
                 <h1>NUOVA VILLA SILVANA</h1>
-                <p>Tablet Reparto Hub • Residenza Protetta per Anziani</p>
+                <p>Senior Care S.r.l. • Tablet Reparto Hub [10/11"]</p>
             </div>
         </div>
         <div class="op-badge-touch" onclick="window.apriModalOperatore()">
@@ -419,13 +422,13 @@
         <div class="stat-pill danger">☣ Isolamento ICA: <strong id="cntIca">0</strong></div>
     </div>
 
-    <!-- AREA CENTRALE CON LE PIASTRELLE SPECIALISTICHE TOUCH -->
+    <!-- AREA CENTRALE CON LE TESSERE SPECIALISTICHE TOUCH -->
     <div class="hub-scroll-area">
         
         <!-- BANNER DEDICATO PER SERVIZI GENERALI -->
         <div class="servizi-generali-banner">
             <h3 style="margin:0 0 6px 0; color:#c2410c; font-size:1.15em;">👨‍🍳 Servizi Generali & Cucina</h3>
-            <p style="margin:0; font-size:0.9em;">Il tuo profilo accede esclusivamente alle registrazioni di autocontrollo HACCP, cottura, abbattitore, temperature e sanificazione.</p>
+            <p style="margin:0; font-size:0.9em;">Il tuo profilo accede esclusivamente all'autocontrollo HACCP, cottura, abbattitore, temperature e sanificazione.</p>
         </div>
 
         <div class="tiles-grid">
@@ -466,7 +469,7 @@
                 <div class="tile-desc">BINA, Scale VMD, PAI & Mappa Lesioni</div>
             </a>
 
-            <!-- 6. PIANI PRESIDI & ASSORBENZA ASL (PUNTA A presidi.html ESISTENTE NELLA CARTELLA) -->
+            <!-- 6. PIANI PRESIDI & ASSORBENZA ASL -->
             <a href="presidi.html" class="tile-card tile-presidi">
                 <div class="tile-badge" id="badgeTilePresidi" style="display:none;">0</div>
                 <div class="tile-icon">📦</div>
@@ -482,7 +485,7 @@
                 <div class="tile-desc">Prescrizioni, Revoche & Incident Report</div>
             </a>
 
-            <!-- 8. PASSAGGIO CONSEGNE TURNO (CON DOCCE, MOBILIZZAZIONI, ECC.) -->
+            <!-- 8. PASSAGGIO CONSEGNE TURNO -->
             <a href="tablet_consegne.html" class="tile-card tile-consegne">
                 <div class="tile-icon">📢</div>
                 <div class="tile-title" style="color:var(--c-consegne);">Consegne Turno</div>
@@ -504,7 +507,21 @@
                 <div class="tile-desc">Quadro Presenze con Età & Barcode TS</div>
             </a>
 
-            <!-- 11. HACCP & AUTOCONTROLLO TABLET (COTTURA, ABBATTIMENTO, TEMPERATURE) -->
+            <!-- 11. CONSENSO INFORMATO & PRIVACY OSPITI (L. 219/2017 & GDPR) -->
+            <a href="tablet_privacy_consenso.html" class="tile-card tile-privacy">
+                <div class="tile-icon">✍️</div>
+                <div class="tile-title" style="color:var(--c-privacy);">Consenso & Privacy</div>
+                <div class="tile-desc">Firma Touch Paziente/AdS & Fiduciari</div>
+            </a>
+
+            <!-- 12. ATTO DI NOMINA PERSONALE IN APPALTO (RELOAD S.P.A. - ART. 29 GDPR) -->
+            <a href="personale_privacy_reload.html" class="tile-card tile-reload">
+                <div class="tile-icon">⚖️</div>
+                <div class="tile-title" style="color:var(--c-reload);">Nomina Reload S.p.A.</div>
+                <div class="tile-desc">Atto Incarico Staff Appalto (Art. 29)</div>
+            </a>
+
+            <!-- 13. HACCP & AUTOCONTROLLO TABLET -->
             <a href="tablet_haccp.html" class="tile-card tile-haccp">
                 <div class="tile-icon">🍳</div>
                 <div class="tile-title" style="color:var(--c-haccp);">HACCP Tablet</div>
@@ -517,17 +534,17 @@
     <!-- FOOTER ISTITUZIONALE -->
     <div class="hub-footer">
         <div>
-            <span>Sistema Informativo Clinico • Nuova Villa Silvana</span>
+            <span>Senior Care S.r.l. • P.IVA 03982400545 • Nuova Villa Silvana</span>
         </div>
         <div style="display:flex; gap:10px;">
-            <a href="index.html" style="background:#0f766e; color:#fff;">🖥️ Desktop Reparto</a>
+            <a href="index_2.html" style="background:#0f766e; color:#fff;">🖥️ Desktop Reparto</a>
         </div>
     </div>
 
-    <!-- SCRIPT FIREBASE v10.8 & LOGICA RUOLI -->
+    <!-- SCRIPT FIREBASE v10.8 CON GATEWAY NOMINA RELOAD E LOG AUDIT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
@@ -559,6 +576,11 @@
             setTimeout(() => t.classList.remove('show'), 2500);
         };
 
+        window.getTimestamp = () => {
+            const n = new Date();
+            return `${n.toLocaleDateString('it-IT')} alle ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
+        };
+
         // GESTIONE OPERATORE & APPLICAZIONE DEI RUOLI
         window.aggiornaUIOperatore = () => {
             if(!window.activeOp) {
@@ -568,7 +590,6 @@
                 document.getElementById('badgeActiveOp').innerText = `👤 ${window.activeOp} (${window.activeQualifica})`;
             }
 
-            // APPLICAZIONE ATTRIBUTI AL BODY PER IL CONTROLLO ACCESSI CSS
             document.body.setAttribute('data-qualifica', window.activeQualifica);
             document.body.setAttribute('data-role', window.activeRole);
         };
@@ -577,13 +598,21 @@
             const c = document.getElementById('operatorsContainer');
             c.innerHTML = '';
             let ops = window.dbOperatori.filter(o => o && o.name);
-            if(!ops.some(o => o.name === "Admin")) ops.push({ name: "Admin", pin: "12345", qualifica: "Amministrazione", role: "admin" });
+            if(!ops.some(o => o.name === "Admin")) ops.push({ name: "Admin", pin: "12345", qualifica: "Amministrazione", role: "admin", privacyFirmata: true });
             ops.sort((a,b) => a.name.localeCompare(b.name));
 
             ops.forEach(op => {
                 const card = document.createElement('div');
                 card.className = 'op-pill';
-                card.innerHTML = `<strong>${op.name.split(' ')[0]}</strong><br><small style="color:#64748b;">${op.qualifica||''}</small>`;
+                
+                const hasNomina = !!(op.privacyFirmata || (op.nominaReload && op.nominaReload.stato === 'SOTTOSCRITTO') || op.name === 'Admin');
+                const statusDot = hasNomina ? '' : '<span style="position:absolute; top:4px; right:4px; width:7px; height:7px; background:#e11d48; border-radius:50%;" title="Nomina Reload da firmare"></span>';
+
+                card.innerHTML = `
+                    ${statusDot}
+                    <strong>${op.name.split(' ')[0]}</strong><br>
+                    <small style="color:#64748b;">${op.qualifica||''}</small>
+                `;
                 card.onclick = () => window.selezionaOpPerPin(op);
                 c.appendChild(card);
             });
@@ -608,12 +637,38 @@
             document.getElementById('opSelectStep').style.display = 'block';
         };
 
-        window.confermaLoginPin = () => {
+        // LOGIN TABLET CON GATEWAY NOMINA RELOAD S.P.A. & AUDIT TRAIL FORENSE
+        window.confermaLoginPin = async () => {
             const pin = document.getElementById('pinInput').value.trim();
             const op = window.selectedOpTemp;
             if(!op) return;
 
             if(op.pin === pin || (op.name === 'Admin' && pin === '12345')) {
+                
+                // 🛑 GATEWAY DI PRIMO ACCESSO TABLET: BLOCCO SE MANCA LA NOMINA RELOAD S.P.A.
+                const isNominaValida = !!(op.privacyFirmata || (op.nominaReload && op.nominaReload.stato === "SOTTOSCRITTO") || op.name === "Admin");
+                if(!isNominaValida) {
+                    try {
+                        await addDoc(collection(db, "audit_trail"), {
+                            timestamp: Date.now(),
+                            dataOraStr: window.getTimestamp(),
+                            operatore: op.name,
+                            qualifica: op.qualifica || "Operatore",
+                            categoria: "REVOCA",
+                            azione: "Blocco Gateway Nomina Tablet",
+                            ospite: "Tablet Reparto Hub",
+                            dettaglio: `Accesso sospeso: Operatore in appalto ${op.name} privo di Atto di Nomina sottoscritto ex Art. 29 GDPR (Reload S.p.A.). Reindirizzamento al portale firme.`
+                        });
+                    } catch(e){}
+
+                    window.showToast("⚠️ Primo Accesso: È richiesta la firma della Nomina Reload S.p.A.!");
+                    setTimeout(() => {
+                        window.location.href = `personale_privacy_reload.html?op=${op.id}&gateway=1`;
+                    }, 1200);
+                    return;
+                }
+
+                // ACCESSO CONSENTITO
                 window.activeOp = op.name;
                 window.activeRole = op.role || 'user';
                 window.activeQualifica = op.qualifica || 'OSS';
@@ -624,16 +679,47 @@
                 localStorage.setItem("activeOperator", op.name);
                 localStorage.setItem("activeQualifica", window.activeQualifica);
 
+                // REGISTRAZIONE FORENSE DEL LOGIN TABLET SU FIRESTORE
+                try {
+                    await addDoc(collection(db, "audit_trail"), {
+                        timestamp: Date.now(),
+                        dataOraStr: window.getTimestamp(),
+                        operatore: op.name,
+                        qualifica: op.qualifica || "Operatore",
+                        categoria: "LOGIN",
+                        azione: "Accesso Tablet Riuscito",
+                        ospite: "Tablet Reparto Hub",
+                        dettaglio: `Autenticazione PIN effettuata con successo su tablet [Operatore autorizzato Reload S.p.A. - Qualifica: ${op.qualifica || 'N/D'}]`
+                    });
+                } catch(err){
+                    console.warn("Impossibile registrare log di login su tablet:", err);
+                }
+
                 document.getElementById('modalOpOverlay').style.display = 'none';
                 window.aggiornaUIOperatore();
                 window.showToast(`Benvenuto ${op.name}`);
+
             } else {
+                // REGISTRAZIONE TENTATIVO DI LOGIN FALLITO (PIN ERRATO SU TABLET)
+                try {
+                    await addDoc(collection(db, "audit_trail"), {
+                        timestamp: Date.now(),
+                        dataOraStr: window.getTimestamp(),
+                        operatore: op.name || "Sconosciuto",
+                        qualifica: op.qualifica || "N/D",
+                        categoria: "REVOCA",
+                        azione: "Tentativo Login Tablet Fallito",
+                        ospite: "Sicurezza Tablet",
+                        dettaglio: `Tentativo di accesso con PIN errato su tablet per il profilo: ${op.name}`
+                    });
+                } catch(e){}
+
                 window.showToast("❌ PIN errato!");
                 document.getElementById('pinInput').value = '';
             }
         };
 
-        // CALCOLO STATISTICHE & BADGE LIVE
+        // CALCOLO INDICATORI & ALLARMI LIVE
         window.calcolaIndicatoriLive = () => {
             const today = new Date(); today.setHours(0,0,0,0);
             const in15Days = new Date(today.getTime() + (15 * 24 * 60 * 60 * 1000)); in15Days.setHours(23,59,59,999);
@@ -649,16 +735,13 @@
                 if(c.disfagia) cntDisf++;
                 if(c.infezione) cntIca++;
 
-                // Conteggio dosi di terapia non ancora somministrate per la giornata odierna
                 const list = c.terapiaList || [];
                 list.forEach(t => {
                     const slots = (t.orario && t.orario !== 'Firma') ? t.orario.split('-').map(s => s.trim()) : ["Firma"];
                     slots.forEach(sl => {
                         const sk = `${todayStr}_${sl}`;
                         const sig = t.signatures ? (t.signatures[sk] || t.signatures[todayStr]) : null;
-                        if (!sig) {
-                            cntTerapieDaSomministrare++;
-                        }
+                        if (!sig) cntTerapieDaSomministrare++;
                     });
                 });
             });
@@ -666,7 +749,7 @@
             document.getElementById('cntDisfagia').innerText = cntDisf;
             document.getElementById('cntIca').innerText = cntIca;
 
-            // Aggiornamento Alert Terapia
+            // Alert Live Terapia
             const cntTerElement = document.getElementById('cntTerapiaPending');
             const badgeTileTer = document.getElementById('badgeTileTerapia');
             if (cntTerElement) cntTerElement.innerText = cntTerapieDaSomministrare;
@@ -714,7 +797,7 @@
 
         // PROPAGAZIONE CONTESTO SESSIONE AL CLICK DELLE TESSERE
         document.querySelectorAll('.tile-card').forEach(card => {
-            card.addEventListener('click', (e) => {
+            card.addEventListener('click', () => {
                 sessionStorage.setItem("activeOperator", window.activeOp);
                 sessionStorage.setItem("activeRole", window.activeRole);
                 sessionStorage.setItem("activeQualifica", window.activeQualifica);

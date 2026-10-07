@@ -50,13 +50,13 @@
             background: rgba(255,255,255,0.18);
             border: 1px solid rgba(255,255,255,0.3);
             color: white;
-            padding: 8px 14px;
+            padding: 7px 12px;
             border-radius: var(--radius);
             font-weight: 700;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            font-size: 0.88em;
+            font-size: 0.85em;
             cursor: pointer;
         }
 
@@ -145,7 +145,7 @@
         .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .form-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
         
-        .form-field { margin-bottom: 10px; }
+        .form-field { margin-bottom: 12px; }
         .form-field label { display: block; font-size: 0.84em; font-weight: 700; color: #334155; margin-bottom: 4px; }
         input[type="text"], input[type="number"], input[type="date"], select, textarea {
             width: 100%;
@@ -158,10 +158,20 @@
         }
         input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; background: #f0fdfa; }
 
+        /* BOX PRONTUARIO PATOLOGIE */
+        .prontuario-box {
+            background: #f0fdf4;
+            border: 1.5px solid #86efac;
+            border-left: 5px solid #16a34a;
+            border-radius: 6px;
+            padding: 12px 14px;
+            margin-bottom: 14px;
+        }
+
         /* PULSANTI TOUCH */
         .btn-tablet {
-            padding: 12px 20px;
-            font-size: 1em;
+            padding: 10px 16px;
+            font-size: 0.95em;
             font-weight: 800;
             border: none;
             border-radius: 6px;
@@ -169,11 +179,14 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             color: #ffffff;
+            transition: opacity 0.15s;
         }
+        .btn-tablet:active { opacity: 0.85; transform: translateY(1px); }
         .btn-save-main {
             width: 100%;
+            padding: 13px;
             background: var(--primary);
             box-shadow: 0 4px 10px rgba(13, 148, 136, 0.25);
             margin-top: 10px;
@@ -264,11 +277,12 @@
         </div>
         <div style="display:flex; gap:8px; align-items:center;">
             <span id="badgeCurrentOp" style="font-weight:700; background:rgba(255,255,255,0.2); padding:5px 10px; border-radius:4px; font-size:0.85em;">👤 Op</span>
-            <button class="nav-btn" onclick="window.location.href='index.html'">🏠 Home Desktop</button>
+            <button class="nav-btn" onclick="window.location.href='tablet_hub.html'">📱 Hub</button>
+            <button class="nav-btn" onclick="window.location.href='index_2.html'">🖥️ Desktop</button>
         </div>
     </div>
 
-    <!-- BANNER PAZIENTE ATTIVO -->
+    <!-- BANNER PAZIENTE ATTIVO CON SELETTORE RAPIDO -->
     <div class="patient-banner">
         <div style="display:flex; align-items:center; gap:12px;">
             <div class="pb-avatar" id="patAvatar">👤</div>
@@ -277,7 +291,12 @@
                 <div class="pb-sub" id="patMeta">Seleziona un paziente dal menu o dal giro reparto</div>
             </div>
         </div>
-        <div id="patBadges" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <select id="selCambioPazienteRapido" onchange="window.cambiaPazienteRapido(this.value)" style="padding:6px 10px; font-size:0.88em; font-weight:700; max-width:230px; border-color:var(--primary);">
+                <option value="">👤 Cambia Ospite...</option>
+            </select>
+            <div id="patBadges" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+        </div>
     </div>
 
     <!-- SOTTO-NAVIGAZIONE SCHEDE TABLET -->
@@ -296,18 +315,93 @@
         <div id="sec-anamnesi" class="section-view active">
             <div class="card-tablet">
                 <h3>🩺 Quadro Clinico & Patologie in Atto</h3>
+
+                <!-- PRONTUARIO SELEZIONE RAPIDA PATOLOGIE MULTICATEGORIA (COME DESKTOP) -->
+                <div class="prontuario-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+                        <strong style="color:#166534; font-size:0.95em;">
+                            ⚡ Prontuario Patologie Frequenti (Inserimento Rapido da Menu a Tendina):
+                        </strong>
+                        <small style="color:#15803d; font-weight:600;">Seleziona la diagnosi e tocca dove aggiungerla</small>
+                    </div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                        <select id="selPatologiaProntuario" style="flex:2; min-width:260px; font-weight:600; border-color:#86efac;">
+                            <option value="">-- Seleziona una patologia dal catalogo --</option>
+                        </select>
+                        <button type="button" class="btn-tablet" style="background:#b91c1c; font-size:0.86em;" onclick="window.aggiungiPatologiaDaProntuario('attive')">
+                            ➕ Inserisci in Diagnosi Attive
+                        </button>
+                        <button type="button" class="btn-tablet" style="background:#0369a1; font-size:0.86em;" onclick="window.aggiungiPatologiaDaProntuario('pregresse')">
+                            ➕ Inserisci in Anamnesi Remota
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CAMPO DIAGNOSI ATTIVE CON TENDINA DEDICATA -->
                 <div class="form-field">
-                    <label style="color:#b91c1c;">Patologie in Atto / Diagnosi Attive di Ricovero *</label>
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:4px;">
+                        <label style="color:#b91c1c; margin:0; font-weight:700;">Patologie in Atto / Diagnosi Attive di Ricovero *</label>
+                        <select id="selQuickPatologieAttive" onchange="window.accodaPatologia('clinPatologieAttive', this)" style="padding:4px 8px; font-size:0.82em; width:auto; max-width:270px; height:32px; border-color:#fca5a5;">
+                            <option value="">⚡ + Aggiungi Patologia Attiva...</option>
+                        </select>
+                    </div>
                     <textarea id="clinPatologieAttive" rows="3" placeholder="Es. Ipertensione arteriosa, Diabete Mellito II, Decadimento vascolare..."></textarea>
                 </div>
+
+                <!-- CAMPO ANAMNESI REMOTA CON TENDINA DEDICATA -->
                 <div class="form-field">
-                    <label style="color:#0369a1;">Anamnesi Patologica Remota (Patologie Pregresse)</label>
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:4px;">
+                        <label style="color:#0369a1; margin:0; font-weight:700;">Anamnesi Patologica Remota (Patologie Pregresse)</label>
+                        <select id="selQuickPatologiePregresse" onchange="window.accodaPatologia('clinPatologiePregresse', this)" style="padding:4px 8px; font-size:0.82em; width:auto; max-width:270px; height:32px; border-color:#93c5fd;">
+                            <option value="">⚡ + Aggiungi Patologia Pregressa...</option>
+                        </select>
+                    </div>
                     <textarea id="clinPatologiePregresse" rows="3" placeholder="Es. Pregresso TIA nel 2021, colecistectomia, frattura femore..."></textarea>
                 </div>
+
+                <!-- INTERVENTI CHIRURGICI & TRAUMI CON MENU A TENDINA -->
                 <div class="form-grid-2">
-                    <div class="form-field"><label>Interventi Chirurgici</label><input type="text" id="clinInterventiChirurgici" placeholder="Es. Protesi anca dx (2018)"></div>
-                    <div class="form-field"><label>Traumi & Fratture</label><input type="text" id="clinTraumi" placeholder="Es. Frattura polso sx"></div>
+                    <div class="form-field">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; margin-bottom:4px;">
+                            <label style="margin:0;">Interventi Chirurgici</label>
+                            <select id="selQuickInterventi" onchange="window.accodaInput('clinInterventiChirurgici', this)" style="padding:3px 6px; font-size:0.8em; width:auto; max-width:200px; height:30px;">
+                                <option value="">⚡ + Seleziona Intervento...</option>
+                                <option value="Protesi anca DX (PTA)">Protesi anca DX (PTA)</option>
+                                <option value="Protesi anca SX (PTA)">Protesi anca SX (PTA)</option>
+                                <option value="Protesi ginocchio DX (PTG)">Protesi ginocchio DX (PTG)</option>
+                                <option value="Protesi ginocchio SX (PTG)">Protesi ginocchio SX (PTG)</option>
+                                <option value="Colecistectomia">Colecistectomia</option>
+                                <option value="Appendicectomia">Appendicectomia</option>
+                                <option value="Ernioplastica inguinale">Ernioplastica inguinale</option>
+                                <option value="Intervento cataratta">Intervento cataratta</option>
+                                <option value="Bypass aortocoronarico (BPAC)">Bypass aortocoronarico</option>
+                                <option value="Angioplastica (PTCA + Stent)">Angioplastica (PTCA + Stent)</option>
+                                <option value="Impianto Pacemaker (PMK)">Impianto Pacemaker</option>
+                                <option value="Resezione prostatica (TURP)">Resezione prostata (TURP)</option>
+                            </select>
+                        </div>
+                        <input type="text" id="clinInterventiChirurgici" placeholder="Es. Protesi anca dx (2018)">
+                    </div>
+
+                    <div class="form-field">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; margin-bottom:4px;">
+                            <label style="margin:0;">Traumi & Fratture</label>
+                            <select id="selQuickTraumi" onchange="window.accodaInput('clinTraumi', this)" style="padding:3px 6px; font-size:0.8em; width:auto; max-width:200px; height:30px;">
+                                <option value="">⚡ + Seleziona Frattura/Trauma...</option>
+                                <option value="Frattura collo femore DX">Frattura collo femore DX</option>
+                                <option value="Frattura collo femore SX">Frattura collo femore SX</option>
+                                <option value="Frattura polso / radio DX">Frattura polso DX</option>
+                                <option value="Frattura polso / radio SX">Frattura polso SX</option>
+                                <option value="Frattura omero">Frattura omero</option>
+                                <option value="Frattura bacino">Frattura bacino</option>
+                                <option value="Crollo vertebrale osteoporotico">Crollo vertebrale osteoporotico</option>
+                                <option value="Trauma cranico minore da caduta">Trauma cranico minore</option>
+                            </select>
+                        </div>
+                        <input type="text" id="clinTraumi" placeholder="Es. Frattura polso sx">
+                    </div>
                 </div>
+
                 <div class="form-field">
                     <label>Terapia Farmacologica all'Ingresso</label>
                     <input type="text" id="clinTerapiaIngresso" placeholder="Es. Cardioaspirina 100mg, Ramipril 5mg, Lasix 25mg...">
@@ -317,7 +411,24 @@
             <div class="card-tablet">
                 <h3>📋 Anamnesi Generale & Rischio Infettivo</h3>
                 <div class="form-grid-3">
-                    <div class="form-field"><label style="color:#b91c1c;">Allergie & Intolleranze</label><input type="text" id="clinAllergie" placeholder="Nega allergie / Penicillina..."></div>
+                    <div class="form-field">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; margin-bottom:4px;">
+                            <label style="color:#b91c1c; margin:0;">Allergie & Intolleranze</label>
+                            <select id="selQuickAllergie" onchange="window.accodaInput('clinAllergie', this)" style="padding:3px 6px; font-size:0.8em; width:auto; max-width:180px; height:30px;">
+                                <option value="">⚡ + Allergia...</option>
+                                <option value="Nega allergie note (NAM)">Nega allergie note (NAM)</option>
+                                <option value="Penicillina e beta-lattamici">Penicillina / Beta-lattamici</option>
+                                <option value="FANS / Acido Acetilsalicilico">FANS / Aspirina</option>
+                                <option value="Mezzo di contrasto iodato">Mezzo contrasto iodato</option>
+                                <option value="Sulfamidici">Sulfamidici</option>
+                                <option value="Lattice">Lattice</option>
+                                <option value="Graminacee / Polline">Graminacee / Polline</option>
+                                <option value="Lattosio">Lattosio</option>
+                                <option value="Glutine / Celiachia">Glutine / Celiachia</option>
+                            </select>
+                        </div>
+                        <input type="text" id="clinAllergie" placeholder="Nega allergie / Penicillina...">
+                    </div>
                     <div class="form-field"><label>Protesi & Ausili</label><input type="text" id="clinProtesi" placeholder="Dentaria, occhiali, acustica..."></div>
                     <div class="form-field"><label>Stato Vaccinale</label><input type="text" id="clinVaccinazioni" placeholder="Antinfluenzale, Covid..."></div>
                 </div>
@@ -541,7 +652,7 @@
                     <div style="background:#fffbeb; border:1px solid #fde68a; padding:12px; border-radius:6px; text-align:center;">
                         <strong style="color:#b45309;">O.S.S.</strong>
                         <div id="paiSigStatusOss" style="font-size:0.82em; margin:6px 0; color:var(--text-light);">⏳ In attesa</div>
-                        <button class="btn-tablet" style="background:#d97706; width:100%; font-size:0.85em; padding:8px;" onclick="window.avviaFirmaPai('OSS')">✍️️ Firma OSS</button>
+                        <button class="btn-tablet" style="background:#d97706; width:100%; font-size:0.85em; padding:8px;" onclick="window.avviaFirmaPai('OSS')">✍ Firma OSS</button>
                     </div>
                 </div>
             </div>
@@ -550,10 +661,10 @@
 
     </div>
 
-    <!-- FIREBASE LOGIC -->
+    <!-- FIREBASE LOGIC & GESTIONE PRONTUARIO PATOLOGIE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
@@ -577,6 +688,121 @@
         window.activeRole = sessionStorage.getItem("activeRole") || "user";
         window.currentPatient = sessionStorage.getItem("globalSelectedPatient") || "";
 
+        // CATALOGO COMPLETO PATOLOGIE GERIATRICHE CODIFICATE
+        const LISTA_PATOLOGIE_CATEGORIE = [
+            {
+                cat: "🫀 Cardiovascolari",
+                items: [
+                    "Ipertensione arteriosa",
+                    "Cardiopatia ischemica cronica",
+                    "Scompenso cardiaco congestizio",
+                    "Fibrillazione atriale (FA)",
+                    "Pregresso IMA (Infarto Miocardico)",
+                    "Arteriopatia obliterante periferica (AOCP)",
+                    "Portatore di Pacemaker (PMK)",
+                    "Insufficienza venosa cronica arti inferiori",
+                    "Aneurisma aorta addominale (in follow-up)"
+                ]
+            },
+            {
+                cat: "🧠 Neurologiche & Cognitive",
+                items: [
+                    "Demenza senile / Deterioramento cognitivo",
+                    "Demenza di Alzheimer",
+                    "Demenza vascolare",
+                    "Morbo di Parkinson",
+                    "Esiti di pregresso Ictus ischemico",
+                    "Esiti di pregresso Ictus emorragico",
+                    "Pregressi TIA",
+                    "Epilessia",
+                    "Sindrome extrapiramidale"
+                ]
+            },
+            {
+                cat: "🗣️ Psichiatriche & Comportamentali",
+                items: [
+                    "Sindrome ansioso-depressiva",
+                    "Depressione maggiore senile",
+                    "Disturbi comportamentali (BPSD)",
+                    "Psicosi senile / Agitazione psicomotoria",
+                    "Disturbo del sonno / Insonnia cronica"
+                ]
+            },
+            {
+                cat: "🩸 Metaboliche & Endocrine",
+                items: [
+                    "Diabete Mellito Tipo 2 (NIDD)",
+                    "Diabete Mellito Tipo 1 (IDD)",
+                    "Dislipidemia / Ipercolesterolemia",
+                    "Ipotiroidismo cronico",
+                    "Iperuricemia / Gotta",
+                    "Obesità",
+                    "Malnutrizione / Rischio sarcopenia"
+                ]
+            },
+            {
+                cat: "🫁 Respiratorie",
+                items: [
+                    "BPCO (Broncopneumopatia cronica ostruttiva)",
+                    "Insufficienza respiratoria cronica",
+                    "Asma bronchiale",
+                    "Enfisema polmonare",
+                    "Esiti di polmonite",
+                    "Sindrome apnee ostruttive del sonno (OSAS)"
+                ]
+            },
+            {
+                cat: "🦴 Osteoarticolari",
+                items: [
+                    "Osteoartrosi polidistrettuale",
+                    "Osteoporosi grave con rischio frattura",
+                    "Esiti frattura collo femore",
+                    "Gonartrosi bilaterale",
+                    "Coxartrosi",
+                    "Spondilodiscoartrosi lombare",
+                    "Artrite reumatoide"
+                ]
+            },
+            {
+                cat: "🩺 Nefrologiche & Urologiche",
+                items: [
+                    "Insufficienza renale cronica (IRC)",
+                    "Ipertrofia prostatica benigna (IPB)",
+                    "Incontinenza urinaria",
+                    "Portatore di catetere vescicale a dimora (CVD)",
+                    "Calcolosi renale"
+                ]
+            },
+            {
+                cat: "🥣 Gastrointestinali",
+                items: [
+                    "Disfagia per solidi/liquidi",
+                    "Malattia da reflusso gastroesofageo (MRGE)",
+                    "Gastrite cronica / Ulcera peptica",
+                    "Stipsi cronica ostinata",
+                    "Diverticolosi del colon",
+                    "Epatopatia cronica / Steatosi epatica"
+                ]
+            },
+            {
+                cat: "🎗️ Ematologiche & Oncologiche",
+                items: [
+                    "Anemia cronica / sideropenica",
+                    "Pregressa neoplasia (in follow-up)",
+                    "Neoplasia attiva"
+                ]
+            },
+            {
+                cat: "👁️ Sensoriali",
+                items: [
+                    "Ipovedente / Maculopatia senile",
+                    "Cataratta bilaterale",
+                    "Glaucoma",
+                    "Ipoacusia bilaterale grave"
+                ]
+            }
+        ];
+
         window.showToast = (msg) => {
             const t = document.getElementById('toast-tablet');
             t.innerText = msg;
@@ -594,6 +820,107 @@
             document.querySelectorAll('.sub-nav-tabs .tab-btn').forEach(e => e.classList.remove('active'));
             document.getElementById('sec-' + secId).classList.add('active');
             if(btn) btn.classList.add('active');
+        };
+
+        // POPOLAMENTO AUTOMATICO DEI MENU A TENDINA PATOLOGIE
+        window.popolaMenuPatologie = () => {
+            const selIds = [
+                { id: 'selPatologiaProntuario', defaultText: '-- Seleziona una Patologia dal Prontuario --' },
+                { id: 'selQuickPatologieAttive', defaultText: '⚡ + Aggiungi Patologia Attiva...' },
+                { id: 'selQuickPatologiePregresse', defaultText: '⚡ + Aggiungi Patologia Pregressa...' }
+            ];
+
+            selIds.forEach(cfg => {
+                const el = document.getElementById(cfg.id);
+                if(!el) return;
+                let html = `<option value="">${cfg.defaultText}</option>`;
+                LISTA_PATOLOGIE_CATEGORIE.forEach(group => {
+                    html += `<optgroup label="${group.cat}">`;
+                    group.items.forEach(item => {
+                        html += `<option value="${item}">${item}</option>`;
+                    });
+                    html += `</optgroup>`;
+                });
+                el.innerHTML = html;
+            });
+        };
+
+        // AGGIUNTA PATOLOGIA DA PRONTUARIO GENERALE
+        window.aggiungiPatologiaDaProntuario = (destinazione) => {
+            const sel = document.getElementById('selPatologiaProntuario');
+            const val = sel ? sel.value.trim() : '';
+            if(!val) return window.showToast("⚠️ Seleziona prima una patologia dal menu!");
+
+            const targetId = (destinazione === 'attive') ? 'clinPatologieAttive' : 'clinPatologiePregresse';
+            window.accodaTesto(targetId, val);
+            sel.value = '';
+        };
+
+        // ACCODA PATOLOGIA DAL MENU A TENDINA SPECIFICO
+        window.accodaPatologia = (targetId, selectEl) => {
+            const val = selectEl ? selectEl.value.trim() : '';
+            if(!val) return;
+            window.accodaTesto(targetId, val);
+            selectEl.value = '';
+        };
+
+        // ACCODA TESTO GENERICO SU TEXTAREA
+        window.accodaTesto = (targetId, val) => {
+            const ta = document.getElementById(targetId);
+            if(!ta) return;
+
+            let cur = ta.value.trim();
+            if(cur.length > 0) {
+                if(cur.toLowerCase().includes(val.toLowerCase())) {
+                    window.showToast(`ℹ️ "${val}" è già presente.`);
+                    return;
+                }
+                ta.value = cur + ", " + val;
+            } else {
+                ta.value = val;
+            }
+
+            // Attivazione automatica alert disfagia
+            if(val.toLowerCase().includes('disfagia')) {
+                const chkD = document.getElementById('chkDisfagia');
+                if(chkD) chkD.checked = true;
+                window.showToast(`🥣 Spuntato alert Disfagia!`);
+            }
+
+            window.showToast(`✅ Inserito: ${val}`);
+        };
+
+        // ACCODA VALORE SU INPUT DI TESTO (INTERVENTI, TRAUMI, ALLERGIE)
+        window.accodaInput = (targetId, selectEl) => {
+            const val = selectEl ? selectEl.value.trim() : '';
+            if(!val) return;
+
+            const inp = document.getElementById(targetId);
+            if(!inp) return;
+
+            let cur = inp.value.trim();
+            if(cur.length > 0) {
+                if(cur.toLowerCase().includes(val.toLowerCase())) {
+                    window.showToast(`ℹ️ "${val}" è già presente.`);
+                    selectEl.value = '';
+                    return;
+                }
+                inp.value = cur + ", " + val;
+            } else {
+                inp.value = val;
+            }
+
+            window.showToast(`✅ Aggiunto: ${val}`);
+            selectEl.value = '';
+        };
+
+        // CAMBIO PAZIENTE VELOCE DAL BANNER
+        window.cambiaPazienteRapido = (nome) => {
+            if(!nome) return;
+            window.currentPatient = nome;
+            sessionStorage.setItem("globalSelectedPatient", nome);
+            window.caricaFascicoloPaziente();
+            window.showToast(`👤 Paziente selezionato: ${nome}`);
         };
 
         // GESTIONE CANVAS FIRMA PAI
@@ -779,13 +1106,13 @@
         window.renderFotoGallery = (d) => {
             const box = document.getElementById('fotoGalleryBox');
             const list = d.fotoLesioni || [];
-            box.innerHTML = list.length === 0 ? '<p style="color:#64748b;">Nessuna foto presente.</p>' : '';
+            box.innerHTML = list.length === 0 ? '<p style="color:#64748b; font-size:0.85em;">Nessuna foto presente.</p>' : '';
             list.forEach(f => {
                 box.innerHTML += `
                     <div class="photo-card-touch">
                         <img src="${f.imgBase64}">
                         <strong>${f.sede}</strong><br>
-                        <small style="color:var(--danger);">${f.stadio}</small><br>
+                        <small style="color:var(--danger); font-weight:700;">${f.stadio}</small><br>
                         <small style="color:#64748b;">${f.data.split(' alle ')[0]}</small>
                     </div>`;
             });
@@ -803,13 +1130,16 @@
             document.getElementById('patMeta').innerText = `Camera: ${g.room || '-'} | CF: ${g.cf || '-'} | MMG: ${g.mmg || '-'}`;
             document.getElementById('patAvatar').innerHTML = g.photo ? `<img src="${g.photo}">` : '👤';
 
+            // Aggiorna menu a tendina pazienti
+            const selP = document.getElementById('selCambioPazienteRapido');
+            if(selP) selP.value = n;
+
             let bHtml = '';
             if(d.infezione) bHtml += `<span class="badge-alert alert-ica">☣ ${d.infezione}</span>`;
             if(d.disfagia) bHtml += `<span class="badge-alert alert-disfagia">🥣 Disfagico</span>`;
             if(window.dbContenzioni.some(c => c.ospite === n && c.stato === 'ATTIVA')) bHtml += `<span class="badge-alert alert-cont">🔒 Contenzione</span>`;
             document.getElementById('patBadges').innerHTML = bHtml;
 
-            // Popola Campi
             const sV = (id, v) => { if(document.getElementById(id)) document.getElementById(id).value = v || ""; };
 
             sV('clinPatologieAttive', d.clinPatologieAttive);
@@ -853,7 +1183,6 @@
             sV('paiInfermieristico', d.paiInfermieristico);
             sV('paiAssistenziale', d.paiAssistenziale);
 
-            // Stato Firme PAI
             const setSigUI = (prefix, elId) => {
                 const el = document.getElementById(elId);
                 if(d[prefix + 'Date']) el.innerHTML = `✅ ${d[prefix + 'Date']}`;
@@ -871,7 +1200,7 @@
         // SALVATAGGIO COMPLETO FASCICOLO
         window.salvaFascicoloClinicoTablet = async () => {
             const n = window.currentPatient;
-            if(!n) return window.showToast("⚠️️ Seleziona prima un paziente!");
+            if(!n) return window.showToast("⚠️ Seleziona prima un paziente!");
 
             let d = window.dbClinica[n] || {};
             const gV = (id) => document.getElementById(id)?.value.trim() || "";
@@ -919,12 +1248,36 @@
             d.chkMarkers = window.currentBodyMarkers;
 
             await setDoc(doc(db, "cartelle_cliniche", n), d, { merge: true });
+
+            try {
+                await addDoc(collection(db, "audit_trail"), {
+                    timestamp: Date.now(),
+                    dataOraStr: window.getTimestamp(),
+                    operatore: window.activeOp,
+                    qualifica: window.activeQualifica,
+                    categoria: "PAI",
+                    azione: "Aggiornamento Fascicolo Clinico",
+                    ospite: n,
+                    dettaglio: `Aggiornate patologie, anamnesi e valutazioni per ${n} da postazione tablet`
+                });
+            } catch(e){}
+
             window.showToast("💾 Fascicolo Clinico Aggiornato con Successo!");
         };
 
         // LISTENERS REALTIME FIRESTORE
         onSnapshot(collection(db, "ospiti"), snap => {
             window.dbOspiti = snap.docs.map(d=>({id:d.id, ...d.data()}));
+            
+            const selP = document.getElementById('selCambioPazienteRapido');
+            if(selP) {
+                const attivi = window.dbOspiti.filter(g => !g.decesso && !g.dimissione).sort((a,b)=>a.name.localeCompare(b.name));
+                selP.innerHTML = '<option value="">👤 Cambia Ospite...</option>';
+                attivi.forEach(g => {
+                    selP.innerHTML += `<option value="${g.name}" ${g.name === window.currentPatient ? 'selected' : ''}>${g.name} (St. ${g.room||'-'})</option>`;
+                });
+            }
+
             if(window.currentPatient) window.caricaFascicoloPaziente();
         });
 
@@ -941,6 +1294,7 @@
 
         window.onload = () => {
             document.getElementById('badgeCurrentOp').innerText = `👤 ${window.activeOp} (${window.activeQualifica})`;
+            window.popolaMenuPatologie();
             if(window.currentPatient) {
                 window.caricaFascicoloPaziente();
             }

@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NVS Tablet - Consenso Informato & Privacy Legale (GDPR / L. 219/2017)</title>
+
+    <style>
+        :root {
+            --bg-body: #f8fafc;
+            --surface: #ffffff;
+            --primary: #0d9488;
+            --primary-dark: #0f766e;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border: #cbd5e1;
+            --danger: #e11d48;
+            --warning: #d97706;
+            --success: #059669;
+            --dir-color: #4f46e5;
+            --radius: 8px;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; padding: 0;
+            background: var(--bg-body);
+            color: var(--text-dark);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            font-size: 13.5px;
+            user-select: none;
+        }
+
+        body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] { display: none !important; }
+
+        /* HEADER TOUCH */
+        .topbar {
+            background: var(--primary-dark);
+            color: #ffffff;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .topbar-brand { font-size: 1.1em; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        .topbar-btns { display: flex; gap: 8px; align-items: center; }
+        .nav-btn {
+            background: rgba(255,255,255,0.18);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.85em;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex; align-items: center; gap: 5px;
+        }
+
+        /* LAYOUT SPLIT A DUE COLONNE */
+        .tablet-layout { display: flex; flex: 1; overflow: hidden; }
+
+        .sidebar-guests {
+            width: 30%;
+            max-width: 340px;
+            min-width: 260px;
+            background: #ffffff;
+            border-right: 2px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .search-area {
+            padding: 10px 12px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border);
+        }
+        .search-area input {
+            width: 100%;
+            padding: 9px 12px;
+            font-size: 0.95em;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            outline: none;
+        }
+        .search-area input:focus { border-color: var(--primary); }
+
+        .guests-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .touch-guest-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 9px 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+        .touch-guest-card.gender-m { border-left: 5px solid #0284c7; background: #f0f9ff; }
+        .touch-guest-card.gender-f { border-left: 5px solid #db2777; background: #fdf2f8; }
+        .touch-guest-card.active {
+            border-color: var(--primary);
+            background: #ccfbf1 !important;
+            box-shadow: 0 2px 6px rgba(13,148,136,0.25);
+            transform: scale(0.99);
+        }
+        .guest-avatar {
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4em;
+            overflow: hidden;
+            flex-shrink: 0;
+            border: 1px solid var(--border);
+        }
+        .guest-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .guest-info h4 { margin: 0; font-size: 0.92em; font-weight: 700; color: var(--text-dark); }
+        .guest-info small { color: var(--text-muted); font-size: 0.78em; }
+
+        /* AREA WORKSPACE LEGALE */
+        .workspace-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: #f8fafc;
+        }
+
+        .patient-banner {
+            background: #ffffff;
+            border-bottom: 2px solid var(--border);
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .pb-name { font-size: 1.15em; font-weight: 800; color: var(--primary-dark); }
+        .pb-sub { font-size: 0.82em; color: var(--text-muted); }
+
+        .content-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px 18px;
+        }
+
+        /* CARDS SEZIONI LEGALI */
+        .card-legal {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .card-legal h4 {
+            margin: 0 0 12px 0;
+            font-size: 1.02em;
+            color: var(--primary-dark);
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 6px;
+        }
+
+        .clause-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid var(--primary);
+            padding: 10px 12px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            font-size: 0.9em;
+            line-height: 1.45;
+        }
+        .clause-box.alert-opt { border-left-color: var(--warning); background: #fffbeb; }
+
+        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .form-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+
+        .form-field { margin-bottom: 8px; }
+        .form-field label { display: block; font-size: 0.8em; font-weight: 700; color: #334155; margin-bottom: 3px; }
+        input[type="text"], input[type="date"], select, textarea {
+            width: 100%;
+            padding: 8px 10px;
+            font-size: 0.92em;
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
+            background: #ffffff;
+            font-family: inherit;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; background: #f0fdfa; }
+
+        /* CANVAS FIRMA DIGITALE */
+        .signature-section {
+            background: #ffffff;
+            border: 2px dashed #94a3b8;
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .signature-pad {
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            background: #f8fafc;
+            touch-action: none;
+            width: 100%;
+            max-width: 580px;
+            height: 150px;
+            display: block;
+            margin: 0 auto;
+            cursor: crosshair;
+        }
+
+        .btn-full {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95em;
+            font-weight: 800;
+            color: #ffffff;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-full:active { transform: translateY(1px); }
+
+        .badge-status { padding: 4px 8px; border-radius: 4px; font-size: 0.75em; font-weight: 800; white-space: nowrap; }
+        .bs-signed { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .bs-pending { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        #toast-box {
+            position: fixed; bottom: 20px; right: 20px;
+            background: #0f172a; color: #ffffff;
+            padding: 10px 18px; border-radius: 6px; font-weight: 700;
+            z-index: 100000; opacity: 0; transition: opacity 0.2s; pointer-events: none;
+        }
+        #toast-box.show { opacity: 1; }
+
+        /* MODULO STAMPA A4 ATTO LEGALE */
+        #printArea { display: none; }
+        @media print {
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea {
+                display: block !important; position: absolute; left: 0; top: 0; width: 100%;
+                background: white !important; color: black !important; padding: 25px;
+                box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 8.5pt; }
+            .print-table th, .print-table td { border: 1px solid #94a3b8; padding: 5px 7px; text-align: left; vertical-align: top; }
+            .print-table th { background: #f1f5f9 !important; font-weight: bold; }
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-box"></div>
+    <div id="printArea"></div>
+
+    <!-- TOPBAR TABLET -->
+    <div class="topbar">
+        <div class="topbar-brand">
+            <span>✍️ NVS Tablet - Fascicolo Privacy & Consenso Legale (GDPR / L. 219)</span>
+        </div>
+        <div class="topbar-btns">
+            <span id="badgeOpTop" style="font-weight:700; background:rgba(255,255,255,0.2); padding:5px 10px; border-radius:4px; font-size:0.85em;">👤 Op</span>
+            <button class="nav-btn" onclick="window.location.href='index_3.html'">📱 Hub</button>
+            <button class="nav-btn" onclick="window.location.href='index.html'">🏠 Home</button>
+        </div>
+    </div>
+
+    <div class="tablet-layout">
+        
+        <!-- SIDEBAR OSPITI CON ETÀ E STATO CONSENSO -->
+        <div class="sidebar-guests">
+            <div class="search-area">
+                <input type="text" id="guestSearch" placeholder="🔍 Cerca paziente, età, stanza..." oninput="window.renderGuests()">
+            </div>
+            <div class="guests-scroll" id="guestList">Caricamento ospiti...</div>
+        </div>
+
+        <!-- WORKSPACE DEL CONSENSO INFORMATO LEGALE -->
+        <div class="workspace-main">
+            
+            <div class="patient-banner">
+                <div>
+                    <div class="pb-name" id="bannerGuestName">Nessun ospite selezionato</div>
+                    <div class="pb-sub" id="bannerGuestMeta">Seleziona un ospite per visualizzare o redigere l'atto legale di consenso</div>
+                </div>
+                <div id="bannerBadges" style="display:flex; gap:6px; align-items:center;"></div>
+            </div>
+
+            <div class="content-scroll">
+                
+                <!-- SEZIONE 1: IDENTIFICAZIONE LEGALE TITOLARE E STATO GIURIDICO SOGGETTO -->
+                <div class="card-legal" style="border-top:4px solid var(--primary-dark);">
+                    <h4>
+                        <span>1. Identificazione Giuridica & Qualificazione del Sottoscrittore</span>
+                        <span style="font-size:0.75em; color:var(--text-muted); font-weight:normal;">Art. 13 GDPR & Artt. 1-3 Legge 219/2017</span>
+                    </h4>
+
+                    <div class="clause-box">
+                        <strong>Titolare del Trattamento:</strong> Senior Care S.r.l. - Sede Legale: Loc. Molinaccio, 25 - 06049 Spoleto (PG)<br>
+                        <strong>P.IVA / C.F.:</strong> 03982400545 | <strong>Struttura:</strong> Nuova Villa Silvana (Spoleto/Terni)<br>
+                        <strong>Contatto RPD / DPO Ufficiale:</strong> <code>seniorcare.srl@gmail.com</code> | <strong>Finalità:</strong> Accoglienza e presa in carico socio-sanitaria residenziale.
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-field">
+                            <label>Stato Giuridico e Capacità d'Agire del Sottoscrittore *</label>
+                            <select id="selStatoGiuridico" onchange="window.aggiornaUIStatoGiuridico()" style="font-weight:bold; color:var(--primary-dark);">
+                                <option value="CAPACE">A. Ospite Pienamente Capace di Intendere e di Volere (Firma Diretta)</option>
+                                <option value="ADS">B. Rappresentato da Amministratore di Sostegno (AdS con poteri sanitari)</option>
+                                <option value="TUTORE">C. Rappresentato da Tutore Legale (Interdizione Giudiziale)</option>
+                                <option value="INCAPACE_NATURALE">D. Ospite con Incapacità Naturale Transitoria (Certificazione Medica e/o Fiduciario)</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label>Data di Redazione & Acquisizione Atto *</label>
+                            <input type="date" id="txtDataAtto">
+                        </div>
+                    </div>
+
+                    <!-- ESTREMI DECRETO DI NOMINA (SE ADS O TUTORE) -->
+                    <div id="boxDettaglioRappresentante" style="display:none; background:#f8fafc; border:1px solid #cbd5e1; padding:12px; border-radius:6px; margin-top:8px;">
+                        <span style="font-weight:bold; color:var(--dir-color); display:block; margin-bottom:8px; font-size:0.9em;">
+                            ⚖️ Estremi del Decreto del Giudice Tutelare (L. 6/2004 e Art. 3 L. 219/2017)
+                        </span>
+                        <div class="form-grid-3">
+                            <div class="form-field"><label>Nome e Cognome Rappresentante Legale *</label><input type="text" id="txtLegaleNome" placeholder="Es. Avv. Mario Bianchi"></div>
+                            <div class="form-field"><label>Codice Fiscale Rappresentante *</label><input type="text" id="txtLegaleCF" style="text-transform:uppercase;"></div>
+                            <div class="form-field"><label>Telefono / PEC Reperibilità</label><input type="text" id="txtLegaleTel" placeholder="333 1234567 / pec@..."></div>
+                        </div>
+                        <div class="form-grid-3">
+                            <div class="form-field"><label>Tribunale Ordinario Competente</label><input type="text" id="txtLegaleTribunale" placeholder="Es. Tribunale di Spoleto / Terni"></div>
+                            <div class="form-field"><label>N° R.G. / V.G. Decreto di Nomina</label><input type="text" id="txtLegaleDecreto" placeholder="Es. N. 1420/2024 V.G."></div>
+                            <div class="form-field"><label>Data del Decreto di Nomina</label><input type="date" id="txtLegaleDataDecreto"></div>
+                        </div>
+                        <div class="form-field" style="margin:0;">
+                            <label>Perimetro dei Poteri Sanitari Conferiti dal Giudice Tutelare:</label>
+                            <select id="selLegalePoteri">
+                                <option value="RAPPRESENTANZA_ESCLUSIVA">Rappresentanza esclusiva totale in ambito sanitario e assistenziale</option>
+                                <option value="ASSISTENZA_CONGIUNTA">Assistenza necessaria congiunta all'ospite</option>
+                                <option value="CURA_ORDINARIA">Rappresentanza limitata all'ordinaria amministrazione e degenza</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEZIONE 2: CLAUSOLE DI CONSENSO E PRESA D'ATTO (UNBUNDLED CONSENT) -->
+                <div class="card-legal">
+                    <h4>
+                        <span>2. Manifestazioni di Volontà Disgiunte & Basi Giuridiche (Art. 7 GDPR)</span>
+                    </h4>
+
+                    <!-- CLAUSOLA 1: PRESA D'ATTO SANITARIA -->
+                    <div class="clause-box">
+                        <strong style="display:block; color:#0f766e; margin-bottom:3px;">
+                            Clausola 1: Presa d'Atto Trattamento Dati Sanitari & Cartella Clinica Elettronica
+                        </strong>
+                        <p style="margin:0 0 6px 0; font-size:0.85em;">
+                            L'interessato o il suo rappresentante legale prende atto che il trattamento dei dati relativi alla salute, anamnesi, prescrizioni farmacologiche, somministrazioni, parametri vitali, diari di reparto e fascicolo PAI è indispensabile per l'esecuzione del contratto di ospitalità socio-sanitaria e avviene ai sensi dell'<strong>art. 9, par. 2, lett. h) GDPR</strong> e degli obblighi di sanità pubblica e accreditamento regionale ex art. 6.1.c GDPR. Tali trattamenti non necessitano di consenso revocabile che pregiudicherebbe la continuità assistenziale.
+                        </p>
+                        <label style="display:flex; align-items:center; gap:8px; font-weight:bold; cursor:pointer;">
+                            <input type="checkbox" id="chkDatiSanitari" checked disabled style="transform:scale(1.2);">
+                            <span>Presa d'atto dell'Informativa ex artt. 13-14 GDPR ed esecuzione del piano assistenziale</span>
+                        </label>
+                    </div>
+
+                    <!-- CLAUSOLA 2: CONSENSO ATTO SANITARIO L. 219/2017 -->
+                    <div class="clause-box">
+                        <strong style="display:block; color:#0f766e; margin-bottom:3px;">
+                            Clausola 2: Consenso Informato alle Prestazioni Sanitarie e Assistenziali (L. 219/2017)
+                        </strong>
+                        <p style="margin:0 0 6px 0; font-size:0.85em;">
+                            Ai sensi dell'art. 1 della Legge 219/2017, acquisita conoscenza degli obiettivi assistenziali, dei benefici, dei rischi prevedibili e delle alternative possibili:
+                        </p>
+                        <div style="display:flex; gap:20px; font-weight:bold;">
+                            <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                                <input type="radio" name="radConsensoCure" id="radCureSi" value="SI" checked>
+                                <span style="color:var(--success);">☑️ ACCONSENTE alle cure socio-sanitarie ordinarie, riabilitative e assistenziali</span>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                                <input type="radio" name="radConsensoCure" id="radCureNo" value="NO">
+                                <span style="color:var(--danger);">☒ NON ACCONSENTE / DISSENTE espressamente</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- CLAUSOLA 3: FOTO CLINICHE DECUBITI (FACOLTATIVO) -->
+                    <div class="clause-box alert-opt">
+                        <strong style="display:block; color:#b45309; margin-bottom:3px;">
+                            Clausola 3: Acquisizione Rilievi Fotografici per Monitoraggio Lesioni da Decubito (Facoltativo)
+                        </strong>
+                        <p style="margin:0 0 6px 0; font-size:0.85em;">
+                            Consenso specifico all'acquisizione di fotografie digitali delle piaghe da decubito tramite i tablet protetti di reparto, ad esclusivo uso del personale medico/infermieristico per il monitoraggio dell'evoluzione cutanea (Art. 9 GDPR). Il mancato rilascio non pregiudica in alcun modo l'erogazione delle cure.
+                        </p>
+                        <div style="display:flex; gap:20px; font-weight:bold;">
+                            <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                                <input type="radio" name="radConsFoto" id="radFotoSi" value="SI" checked>
+                                <span style="color:var(--success);">☑️ ACCONSENTE ai rilievi fotografici clinici delle lesioni</span>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                                <input type="radio" name="radConsFoto" id="radFotoNo" value="NO">
+                                <span style="color:var(--danger);">☒ NEGA IL CONSENSO ai rilievi fotografici</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- CLAUSOLA 4: PREFERENZE ALIMENTARI ETICO/RELIGIOSE -->
+                    <div class="clause-box">
+                        <strong style="display:block; color:#0f766e; margin-bottom:3px;">
+                            Clausola 4: Gestione Preferenze Alimentari per Convinzioni Religiose o Etiche (Art. 9 GDPR)
+                        </strong>
+                        <p style="margin:0 0 6px 0; font-size:0.85em;">
+                            Autorizzazione al trattamento e alla comunicazione interna ai Servizi Generali di Cucina di dati particolari attinenti a divieti o scelte alimentari religiose o filosofiche (es. cibi Kosher, Halal, vegetarianesimo etico).
+                        </p>
+                        <div style="display:flex; gap:20px; font-weight:bold;">
+                            <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                                <input type="radio" name="radConsDiet" id="radDietSi" value="SI" checked>
+                                <span style="color:var(--success);">☑️ ACCONSENTE alla registrazione delle preferenze</span>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                                <input type="radio" name="radConsDiet" id="radDietNo" value="NO">
+                                <span style="color:var(--muted);">☒ NESSUNA PREFERENZA PARTICOLARE</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- CLAUSOLA 5: DELEGA RICEZIONE NOTIZIE CLINICHE -->
+                    <div class="clause-box">
+                        <strong style="display:block; color:#0f766e; margin-bottom:3px;">
+                            Clausola 5: Delega Fiduciaria per Comunicazioni sullo Stato di Salute & Divieto a Terzi
+                        </strong>
+                        <p style="margin:0 0 6px 0; font-size:0.85em;">
+                            In ottemperanza al segreto professionale, il personale è autorizzato a fornire informazioni verbali o telefoniche sullo stato di salute, parametri ed emergenze <strong>esclusivamente ai seguenti soggetti nominativamente delegati</strong>. Vige espresso divieto di comunicazione a qualsiasi altro soggetto non presente nel seguente elenco.
+                        </p>
+                        <div class="form-grid-3" style="margin-bottom:6px;">
+                            <div class="form-field" style="margin:0;"><input type="text" id="del1Nome" placeholder="1. Nome e Cognome Delegato Fiduciario *"></div>
+                            <div class="form-field" style="margin:0;"><input type="text" id="del1Par" placeholder="Grado di Parentela / Ruolo (es. Figlio)"></div>
+                            <div class="form-field" style="margin:0;"><input type="text" id="del1Tel" placeholder="Telefono di Reperibilità *"></div>
+                        </div>
+                        <div class="form-grid-3">
+                            <div class="form-field" style="margin:0;"><input type="text" id="del2Nome" placeholder="2. Nome e Cognome Delegato (Opzionale)"></div>
+                            <div class="form-field" style="margin:0;"><input type="text" id="del2Par" placeholder="Grado di Parentela"></div>
+                            <div class="form-field" style="margin:0;"><input type="text" id="del2Tel" placeholder="Telefono di Reperibilità"></div>
+                        </div>
+                    </div>
+
+                    <!-- CLAUSOLA 6: DAT / DISPOSIZIONI ANTICIPATE DI TRATTAMENTO -->
+                    <div class="clause-box">
+                        <strong style="display:block; color:#0f766e; margin-bottom:3px;">
+                            Clausola 6: Disposizioni Anticipate di Trattamento (D.A.T. ex Art. 4 L. 219/2017)
+                        </strong>
+                        <div class="form-grid-2">
+                            <div>
+                                <label style="font-size:0.8em; font-weight:bold;">Esistenza di DAT depositate formalmente:</label>
+                                <select id="selDatStato">
+                                    <option value="NO">NO - Nessuna DAT formalizzata</option>
+                                    <option value="SI_COMUNE">SI - Depositate presso Ufficio di Stato Civile del Comune</option>
+                                    <option value="SI_NOTAIO">SI - Depositate con Atto Notarile / Fiduciario</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size:0.8em; font-weight:bold;">Fiduciario DAT designato / Note:</label>
+                                <input type="text" id="txtDatFiduciario" placeholder="Nominativo fiduciario o estremi deposito">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEZIONE 3: FIRMA ELETTRONICA TOUCH & ATTESTAZIONE OPERATORE -->
+                <div class="card-legal" style="border-top:4px solid var(--dir-color);">
+                    <h4 style="color:var(--dir-color);">
+                        <span>3. Apposizione Firma Elettronica Touch & Attestazione Sanitaria</span>
+                        <button class="nav-btn" style="background:#64748b; padding:3px 8px; font-size:0.75em;" onclick="window.clearSignature()">🔄 Pulisci Tratto</button>
+                    </h4>
+
+                    <p style="font-size:0.85em; color:var(--text-muted); margin:0 0 8px 0;">
+                        La sottoscrizione viene apposta con pennino capacitivo o dito sullo schermo del tablet (Art. 1 c. 4 L. 219/2017):
+                    </p>
+
+                    <div class="signature-section">
+                        <canvas id="canvasConsenso" class="signature-pad" width="560" height="150"></canvas>
+                        <span id="lblSottoscrittoreFirma" style="font-size:0.8em; color:#475569; font-weight:bold; display:block; margin-top:6px;">
+                            Firma dell'Ospite / Rappresentante Legale
+                        </span>
+                    </div>
+
+                    <!-- ATTESTAZIONE DELL'OPERATORE SANITARIO (OBBLIGATORIA PER ISPEZIONI NAS/ASL) -->
+                    <div style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px 12px; border-radius:6px; margin-top:12px; font-size:0.85em;">
+                        <strong style="color:#0f766e; display:block; margin-bottom:4px;">
+                            Attestazione dell'Operatore Sanitario Acquisitore (Art. 1 comma 4 Legge 219/2017):
+                        </strong>
+                        <p style="margin:0; font-style:italic;">
+                            "Il sottoscritto operatore sanitario attesta di aver preliminarmente fornito all'interessato/rappresentante informazioni complete, comprensibili ed esaurienti circa il piano socio-sanitario residenziale, la gestione dei dati personali ex GDPR e che la firma touch sovrastante è stata apposta in sua costante presenza."
+                        </p>
+                        <div style="margin-top:6px; font-weight:bold; color:#1e293b;">
+                            Operatore di Riferimento: <span id="lblAttestanteNome">-</span> (<span id="lblAttestanteQualifica">-</span>)
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+                        <button class="btn-full" style="background:var(--success); flex:2; margin:0;" onclick="window.salvaConsensoTouch()">
+                            💾 Salva e Registra Atto Legale nel Fascicolo
+                        </button>
+                        <button class="btn-full" style="background:#475569; flex:1; margin:0;" onclick="window.stampaConsensoA4()">
+                            🖨️ Stampa Atto Conforme A4 (PDF)
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- SCRIPT FIREBASE v10.8 & MOTORE DI ACQUISIZIONE DIGITALE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAc0fIlfds4Gne5m3qpH25uacK4NeR6TzM", 
+            authDomain: "gestione-visite-b445b.firebaseapp.com", 
+            projectId: "gestione-visite-b445b", 
+            storageBucket: "gestione-visite-b445b.firebasestorage.app", 
+            messagingSenderId: "720937824810", 
+            appId: "1:720937824810:web:b04b60d1d66bb8f4040953" 
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.dbOspiti = [];
+        window.dbClinica = {};
+
+        window.activeOp = sessionStorage.getItem("activeOperator") || localStorage.getItem("activeOperator") || "Operatore Sanitario";
+        window.activeRole = sessionStorage.getItem("activeRole") || localStorage.getItem("activeRole") || "user";
+        window.activeQualifica = sessionStorage.getItem("activeQualifica") || localStorage.getItem("activeQualifica") || "Infermiere";
+        window.currentPatient = sessionStorage.getItem("globalSelectedPatient") || "";
+
+        window.showToast = (msg) => {
+            const t = document.getElementById('toast-box');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        };
+
+        window.getTimestamp = () => {
+            const n = new Date();
+            return `${n.toLocaleDateString('it-IT')} alle ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
+        };
+
+        window.getTodayString = () => {
+            const n = new Date();
+            return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+        };
+
+        window.formatDateSafe = (d) => {
+            if(!d) return "-";
+            if(typeof d === 'string' && d.includes('-')) return d.split('-').reverse().join('/');
+            return d;
+        };
+
+        // CALCOLO DINAMICO ETÀ ANAGRAFICA
+        window.calcolaEta = (dobStr) => {
+            if (!dobStr) return '';
+            let birthDate;
+            if (typeof dobStr === 'string' && dobStr.includes('/')) {
+                const parts = dobStr.split('/');
+                if (parts.length === 3) birthDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+            } else {
+                birthDate = new Date(dobStr);
+            }
+            if (!birthDate || isNaN(birthDate.getTime())) return '';
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+            return (age >= 0 && age < 130) ? `${age} anni` : '';
+        };
+
+        // CANVAS TOUCH CAPACITIVO CON GESTIONE SCALA
+        const canvas = document.getElementById('canvasConsenso');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+
+        window.initCanvas = () => {
+            ctx.lineWidth = 2.8;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = '#0f172a';
+        };
+
+        const getPos = (e) => {
+            const r = canvas.getBoundingClientRect();
+            let cx = e.touches ? e.touches[0].clientX : e.clientX;
+            let cy = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: (cx - r.left) * (canvas.width / r.width),
+                y: (cy - r.top) * (canvas.height / r.height)
+            };
+        };
+
+        canvas.addEventListener('mousedown', (e)=>{ isDrawing=true; let p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
+        canvas.addEventListener('mousemove', (e)=>{ if(!isDrawing) return; let p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); });
+        window.addEventListener('mouseup', ()=>isDrawing=false);
+
+        canvas.addEventListener('touchstart', (e)=>{ isDrawing=true; let p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); e.preventDefault(); }, {passive:false});
+        canvas.addEventListener('touchmove', (e)=>{ if(!isDrawing) return; let p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); e.preventDefault(); }, {passive:false});
+        canvas.addEventListener('touchend', ()=>isDrawing=false);
+
+        window.clearSignature = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        };
+
+        window.isCanvasBlank = () => {
+            const pixelBuffer = new Uint32Array(ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer);
+            return !pixelBuffer.some(color => color !== 0);
+        };
+
+        window.aggiornaUIStatoGiuridico = () => {
+            const val = document.getElementById('selStatoGiuridico').value;
+            const box = document.getElementById('boxDettaglioRappresentante');
+            const lblFirma = document.getElementById('lblSottoscrittoreFirma');
+
+            if(val === 'ADS') {
+                box.style.display = 'block';
+                lblFirma.innerText = "Firma dell'Amministratore di Sostegno (AdS)";
+            } else if(val === 'TUTORE') {
+                box.style.display = 'block';
+                lblFirma.innerText = "Firma del Tutore Legale / Curatore";
+            } else if(val === 'INCAPACE_NATURALE') {
+                box.style.display = 'block';
+                lblFirma.innerText = "Firma del Fiduciario / Parente Convivente (con attestazione medica)";
+            } else {
+                box.style.display = 'none';
+                lblFirma.innerText = "Firma Autografa dell'Ospite (Capace)";
+            }
+        };
+
+        // RENDERING SIDEBAR OSPITI
+        window.renderGuests = () => {
+            const list = document.getElementById('guestList');
+            const search = (document.getElementById('guestSearch')?.value || '').toLowerCase().trim();
+            list.innerHTML = '';
+
+            const attivi = window.dbOspiti
+                .filter(g => !g.decesso && !g.dimissione)
+                .sort((a,b) => a.name.localeCompare(b.name));
+
+            attivi.forEach(g => {
+                const etaStr = window.calcolaEta(g.dob);
+
+                if(search) {
+                    const matchNome = g.name.toLowerCase().includes(search);
+                    const matchEta = etaStr && etaStr.toLowerCase().includes(search);
+                    const matchStanza = g.room && g.room.toLowerCase().includes(search);
+                    if(!matchNome && !matchEta && !matchStanza) return;
+                }
+
+                const isM = (g.sesso || '').toUpperCase() === 'M';
+                const isSelected = g.name === window.currentPatient;
+
+                const pD = window.dbClinica[g.name] || {};
+                const isSigned = !!(pD.consensoLegale && pD.consensoLegale.firmaB64);
+                const statusBadge = isSigned 
+                    ? `<span class="badge-status bs-signed">🟢 Regolare</span>` 
+                    : `<span class="badge-status bs-pending">🔴 Da Acquisire</span>`;
+
+                const item = document.createElement('div');
+                item.className = `touch-guest-card ${isM ? 'gender-m' : 'gender-f'} ${isSelected ? 'active' : ''}`;
+                item.onclick = () => window.selezionaPaziente(g.name);
+                item.innerHTML = `
+                    <div class="guest-avatar">
+                        ${g.photo ? `<img src="${g.photo}">` : (isM ? '👤' : '🌸')}
+                    </div>
+                    <div class="guest-info" style="flex:1; overflow:hidden;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h4>${g.name}</h4>
+                            ${statusBadge}
+                        </div>
+                        <small>Stanza: <strong>${g.room || '-'}</strong> ${etaStr ? `• 🎂 ${etaStr}` : ''}</small>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        };
+
+        window.selezionaPaziente = (n) => {
+            window.currentPatient = n;
+            sessionStorage.setItem("globalSelectedPatient", n);
+            window.renderGuests();
+            window.caricaFascicoloConsenso(n);
+        };
+
+        // CARICAMENTO STATO ATTO CONSENSO
+        window.caricaFascicoloConsenso = (n) => {
+            if(!n) return;
+            const g = window.dbOspiti.find(x => x.name === n) || {};
+            const pD = window.dbClinica[n] || {};
+            const etaStr = window.calcolaEta(g.dob);
+
+            document.getElementById('bannerGuestName').innerText = n;
+            document.getElementById('bannerGuestMeta').innerText = `Camera: ${g.room || '-'} | CF: ${g.cf || '-'} | MMG: ${g.mmg || '-'} ${etaStr ? '| 🎂 Età: ' + etaStr : ''}`;
+
+            const c = pD.consensoLegale || {};
+            const isSigned = !!c.firmaB64;
+
+            const bBox = document.getElementById('bannerBadges');
+            bBox.innerHTML = isSigned 
+                ? `<span class="badge-status bs-signed">🟢 ATTO SOTTOSCRITTO IL ${c.dataAttoStr || '-'} (${c.statoGiuridico || 'CAPACE'})</span>`
+                : `<span class="badge-status bs-pending">🔴 ATTO NON ANCORA SOTTOSCRITTO</span>`;
+
+            document.getElementById('txtDataAtto').value = c.dataAttoIso || window.getTodayString();
+            document.getElementById('selStatoGiuridico').value = c.statoGiuridico || (g.tutore ? "ADS" : "CAPACE");
+            window.aggiornaUIStatoGiuridico();
+
+            // Estremi AdS / Rappresentante
+            document.getElementById('txtLegaleNome').value = c.legaleNome || g.tutore || "";
+            document.getElementById('txtLegaleCF').value = c.legaleCF || "";
+            document.getElementById('txtLegaleTel').value = c.legaleTel || g.tutoreTel || "";
+            document.getElementById('txtLegaleTribunale').value = c.legaleTribunale || "Spoleto";
+            document.getElementById('txtLegaleDecreto').value = c.legaleDecreto || "";
+            document.getElementById('txtLegaleDataDecreto').value = c.legaleDataDecreto || "";
+            document.getElementById('selLegalePoteri').value = c.legalePoteri || "RAPPRESENTANZA_ESCLUSIVA";
+
+            // Clausole e opzioni
+            if(c.consensoCure === "NO") document.getElementById('radCureNo').checked = true;
+            else document.getElementById('radCureSi').checked = true;
+
+            if(c.consensoFoto === "NO") document.getElementById('radFotoNo').checked = true;
+            else document.getElementById('radFotoSi').checked = true;
+
+            if(c.consensoDiet === "NO") document.getElementById('radDietNo').checked = true;
+            else document.getElementById('radDietSi').checked = true;
+
+            // Delegati fiduciari
+            document.getElementById('del1Nome').value = (c.delegati && c.delegati[0] ? c.delegati[0].nome : (g.ref || ""));
+            document.getElementById('del1Par').value = (c.delegati && c.delegati[0] ? c.delegati[0].parentela : (g.refParentela || ""));
+            document.getElementById('del1Tel').value = (c.delegati && c.delegati[0] ? c.delegati[0].telefono : (g.refTel || ""));
+
+            document.getElementById('del2Nome').value = (c.delegati && c.delegati[1] ? c.delegati[1].nome : "");
+            document.getElementById('del2Par').value = (c.delegati && c.delegati[1] ? c.delegati[1].parentela : "");
+            document.getElementById('del2Tel').value = (c.delegati && c.delegati[1] ? c.delegati[1].telefono : "");
+
+            // DAT
+            document.getElementById('selDatStato').value = c.datStato || "NO";
+            document.getElementById('txtDatFiduciario').value = c.datFiduciario || "";
+
+            // Firma su canvas
+            window.clearSignature();
+            if(c.firmaB64) {
+                const img = new Image();
+                img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                img.src = c.firmaB64;
+            }
+        };
+
+        // SALVATAGGIO ATTO LEGALE IN FIRESTORE
+        window.salvaConsensoTouch = async () => {
+            const n = window.currentPatient;
+            if(!n) return window.showToast("⚠️ Seleziona prima un paziente dall'elenco!");
+
+            if(window.isCanvasBlank()) {
+                return window.showToast("⚠️ Firma obbligatoria: apponi il tratto grafico sullo schermo!");
+            }
+
+            const statoGiur = document.getElementById('selStatoGiuridico').value;
+            const dataIso = document.getElementById('txtDataAtto').value || window.getTodayString();
+
+            if((statoGiur === 'ADS' || statoGiur === 'TUTORE') && !document.getElementById('txtLegaleNome').value.trim()) {
+                return window.showToast("⚠️ Inserisci il nominativo del Rappresentante Legale!");
+            }
+
+            const delegati = [];
+            const d1 = document.getElementById('del1Nome').value.trim();
+            if(d1) {
+                delegati.push({
+                    nome: d1,
+                    parentela: document.getElementById('del1Par').value.trim(),
+                    telefono: document.getElementById('del1Tel').value.trim()
+                });
+            }
+            const d2 = document.getElementById('del2Nome').value.trim();
+            if(d2) {
+                delegati.push({
+                    nome: d2,
+                    parentela: document.getElementById('del2Par').value.trim(),
+                    telefono: document.getElementById('del2Tel').value.trim()
+                });
+            }
+
+            const attoPayload = {
+                dataAttoIso: dataIso,
+                dataAttoStr: window.formatDateSafe(dataIso),
+                statoGiuridico: statoGiur,
+                legaleNome: document.getElementById('txtLegaleNome').value.trim(),
+                legaleCF: document.getElementById('txtLegaleCF').value.trim().toUpperCase(),
+                legaleTel: document.getElementById('txtLegaleTel').value.trim(),
+                legaleTribunale: document.getElementById('txtLegaleTribunale').value.trim(),
+                legaleDecreto: document.getElementById('txtLegaleDecreto').value.trim(),
+                legaleDataDecreto: document.getElementById('txtLegaleDataDecreto').value,
+                legalePoteri: document.getElementById('selLegalePoteri').value,
+                consensoSanitarioPresaAtto: true,
+                consensoCure: document.getElementById('radCureSi').checked ? "SI" : "NO",
+                consensoFoto: document.getElementById('radFotoSi').checked ? "SI" : "NO",
+                consensoDiet: document.getElementById('radDietSi').checked ? "SI" : "NO",
+                delegati: delegati,
+                datStato: document.getElementById('selDatStato').value,
+                datFiduciario: document.getElementById('txtDatFiduciario').value.trim(),
+                firmaB64: canvas.toDataURL('image/png'),
+                attestanteNome: window.activeOp,
+                attestanteQualifica: window.activeQualifica,
+                tsAcquisizione: window.getTimestamp(),
+                tsEpoch: Date.now()
+            };
+
+            let pD = window.dbClinica[n] || {};
+            pD.consensoLegale = attoPayload;
+
+            // 1. Scrittura atomica cartella clinica
+            await setDoc(doc(db, "cartelle_cliniche", n), pD, { merge: true });
+
+            // 2. Audit Trail legale inalterabile (GDPR Art. 32)
+            await addDoc(collection(db, "audit_trail"), {
+                dataOraStr: window.getTimestamp(),
+                timestamp: Date.now(),
+                operatore: window.activeOp,
+                qualifica: window.activeQualifica,
+                categoria: "PAI",
+                azione: "ATTO_CONSENSO_INFORMATO_L219",
+                ospite: n,
+                dettaglio: `Sottoscrizione atto legale consenso informato e privacy (${statoGiur}). Foto lesioni: ${attoPayload.consensoFoto}. Delegati fiduciari: ${delegati.length}. Attestato da ${window.activeOp}.`
+            });
+
+            window.showToast("✅ Atto Legale di Consenso Registrato e Blindato!");
+            window.caricaFascicoloConsenso(n);
+            window.renderGuests();
+        };
+
+        // STAMPA CONFORME A4 / PDF (PRONTA PER GLI ORGANI DI VIGILANZA)
+        window.stampaConsensoA4 = () => {
+            const n = window.currentPatient;
+            if(!n) return window.showToast("⚠️ Seleziona prima un paziente!");
+
+            const g = window.dbOspiti.find(x => x.name === n) || {};
+            const pD = window.dbClinica[n] || {};
+            const c = pD.consensoLegale || {};
+
+            if(!c.firmaB64) {
+                return window.showToast("⚠️ Salva e acquisisci la firma prima di generare l'atto cartaceo!");
+            }
+
+            const delegatiRows = (c.delegati && c.delegati.length > 0)
+                ? c.delegati.map((d, i) => `<tr><td>${i+1}. ${d.nome}</td><td>${d.parentela||'-'}</td><td>${d.telefono||'-'}</td></tr>`).join('')
+                : '<tr><td colspan="3">Nessun fiduciario designato; comunicazioni riservate unicamente all\'interessato o AdS.</td></tr>';
+
+            let sottoscrittoreDettaglio = `<strong>Ospite Diretto Pienamente Capace</strong>`;
+            if(c.statoGiuridico === 'ADS') {
+                sottoscrittoreDettaglio = `<strong>Amministratore di Sostegno:</strong> ${c.legaleNome} (CF: ${c.legaleCF||'-'}) - Decreto Trib. ${c.legaleTribunale||'-'} N° ${c.legaleDecreto||'-'} del ${window.formatDateSafe(c.legaleDataDecreto)}`;
+            } else if(c.statoGiuridico === 'TUTORE') {
+                sottoscrittoreDettaglio = `<strong>Tutore Legale:</strong> ${c.legaleNome} - Sentenza Interdizione Trib. ${c.legaleTribunale||'-'} N° ${c.legaleDecreto||'-'}`;
+            } else if(c.statoGiuridico === 'INCAPACE_NATURALE') {
+                sottoscrittoreDettaglio = `<strong>Ospite con Incapacità Naturale</strong> - Assistito da Fiduciario/Familiare: ${c.legaleNome}`;
+            }
+
+            const html = `
+                <div style="border-bottom:2px solid #0f766e; padding-bottom:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div>
+                        <h2 style="margin:0; color:#0f766e; font-size:15pt;">SENIOR CARE S.R.L.</h2>
+                        <p style="margin:2px 0; font-size:8pt; color:#475569;">
+                            Residenza Protetta per Anziani "Nuova Villa Silvana" | P.IVA: 03982400545<br>
+                            Sede Legale: Loc. Molinaccio, 25 - 06049 Spoleto (PG) | PEC: seniorcare.srl@gmail.com
+                        </p>
+                    </div>
+                    <div style="text-align:right;">
+                        <h3 style="margin:0; font-size:10.5pt; color:#0f172a;">ATTO DI CONSENSO INFORMATO ALLE CURE & PRIVACY</h3>
+                        <small style="font-size:7.5pt; color:#64748b;">(Reg. UE 2016/679 - GDPR & Legge 22 Dicembre 2017, N. 219)</small>
+                    </div>
+                </div>
+
+                <table class="print-table">
+                    <tr>
+                        <td style="width:50%;">Paziente / Residente: <strong style="font-size:10pt;">${n}</strong></td>
+                        <td>Stanza / Posto Letto: <strong>Camera ${g.room||'-'}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Codice Fiscale: <strong>${g.cf||'-'}</strong></td>
+                        <td>Data di Nascita: <strong>${window.formatDateSafe(g.dob)}</strong> (${window.calcolaEta(g.dob)})</td>
+                    </tr>
+                    <tr>
+                        <td>Medico Curante (MMG): <strong>${g.mmg||'-'}</strong></td>
+                        <td>Data Ingresso in Struttura: <strong>${window.formatDateSafe(g.ingresso)}</strong></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">Qualificazione Giuridica del Sottoscrittore: ${sottoscrittoreDettaglio}</td>
+                    </tr>
+                </table>
+
+                <h4 style="margin:10px 0 3px 0; color:#0f766e; font-size:9pt;">1. Presa d'Atto Trattamento Dati Sanitari & PAI (Artt. 6 e 9 GDPR)</h4>
+                <p style="font-size:7.8pt; text-align:justify; margin:0 0 6px 0;">
+                    Il sottoscritto dichiara di aver ricevuto l'Informativa ex artt. 13-14 GDPR da parte di Senior Care S.r.l. e prende atto che il trattamento dei dati personali e delle categorie particolari di dati (cartella clinica, terapie farmacologiche, parametri vitali, diari assistenziali e PAI) è necessario per l'erogazione dei servizi socio-sanitari e per obbligo di legge (Art. 6.1.b, Art. 6.1.c e Art. 9.2.h GDPR).
+                </p>
+
+                <h4 style="margin:8px 0 3px 0; color:#0f766e; font-size:9pt;">2. Consenso Informato alle Prestazioni Sanitarie (Art. 1 Legge 219/2017)</h4>
+                <p style="font-size:7.8pt; text-align:justify; margin:0 0 6px 0;">
+                    In ossequio al principio di autodeterminazione e dignità della persona, edotto delle prestazioni sanitarie ordinarie, farmacologiche e assistenziali erogate dal personale della struttura: <strong>ESPRIME CONSENSO: ${c.consensoCure === 'SI' ? 'ACCONSENTE' : 'DISSENTE'}</strong>.
+                </p>
+
+                <h4 style="margin:8px 0 3px 0; color:#0f766e; font-size:9pt;">3. Monitoraggio Fotografico Digitale Lesioni Cutanee & Piaghe da Decubito</h4>
+                <p style="font-size:7.8pt; text-align:justify; margin:0 0 6px 0;">
+                    Consenso specifico e facoltativo per l'acquisizione di rilievi fotografici tramite tablet a circuito chiuso, finalizzati esclusivamente al monitoraggio clinico dell'evoluzione delle piaghe da decubito (il diniego non pregiudica le cure): <strong>${c.consensoFoto === 'SI' ? 'ACCONSENTE' : 'NON ACCONSENTE'}</strong>.
+                </p>
+
+                <h4 style="margin:8px 0 3px 0; color:#0f766e; font-size:9pt;">4. Soggetti Fiduciari Delegati alla Comunicazione delle Notizie Cliniche</h4>
+                <p style="font-size:7.8pt; text-align:justify; margin:0 0 4px 0;">
+                    Il personale sanitario è autorizzato a fornire aggiornamenti clinici esclusivamente ai seguenti soggetti; per qualsiasi terzo estraneo vige il vincolo assoluto del segreto professionale:
+                </p>
+                <table class="print-table">
+                    <thead><tr><th>Nominativo Delegato Fiduciario</th><th>Grado di Parentela / Ruolo</th><th>Recapito Telefonico</th></tr></thead>
+                    <tbody>${delegatiRows}</tbody>
+                </table>
+
+                <h4 style="margin:8px 0 3px 0; color:#0f766e; font-size:9pt;">5. Disposizioni Anticipate di Trattamento (D.A.T. ex Art. 4 L. 219/2017)</h4>
+                <p style="font-size:7.8pt; margin:0 0 10px 0;">
+                    Stato delle Disposizioni Anticipate: <strong>${c.datStato !== 'NO' ? 'SI - Formalizzate ('+c.datStato+') - Note: '+(c.datFiduciario||'-') : 'NO - Nessuna D.A.T. depositata agli atti'}</strong>.
+                </p>
+
+                <div style="margin-top:15px; border-top:1.5px solid #0f766e; padding-top:8px; display:flex; justify-content:space-between; align-items:flex-end;">
+                    <div style="font-size:7.8pt; line-height:1.4;">
+                        Data e Ora di Perfezionamento Atto: <strong>${c.tsAcquisizione || window.getTimestamp()}</strong><br>
+                        <strong>ATTESTAZIONE OPERATORE SANITARIO (Art. 1 c. 4 L. 219/2017):</strong><br>
+                        Si attesta la completezza dell'informazione e l'avvenuta sottoscrizione in presenza.<br>
+                        Operatore Incaricato: <strong>${c.attestanteNome || window.activeOp}</strong> (${c.attestanteQualifica || window.activeQualifica})
+                    </div>
+                    <div style="text-align:center;">
+                        <span style="font-size:7.5pt; color:#475569; display:block; margin-bottom:2px;">Firma Grafica Acquisita su Schermo Touch Capacitivo:</span>
+                        <img src="${c.firmaB64}" style="max-height:55px; border-bottom:1px solid #000; padding-bottom:2px;">
+                        <span style="font-size:7.5pt; display:block; margin-top:2px;">(${c.statoGiuridico === 'CAPACE' ? n : c.legaleNome})</span>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('printArea').innerHTML = html;
+            setTimeout(() => window.print(), 250);
+        };
+
+        // REAL-TIME LISTENERS FIRESTORE
+        onSnapshot(collection(db, "ospiti"), snap => {
+            window.dbOspiti = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            window.renderGuests();
+        });
+
+        onSnapshot(collection(db, "cartelle_cliniche"), snap => {
+            window.dbClinica = {};
+            snap.forEach(d => { window.dbClinica[d.id] = d.data(); });
+            window.renderGuests();
+            if(window.currentPatient) window.caricaFascicoloConsenso(window.currentPatient);
+        });
+
+        window.onload = () => {
+            window.initCanvas();
+            document.body.setAttribute('data-qualifica', window.activeQualifica);
+            document.getElementById('badgeOpTop').innerText = `👤 ${window.activeOp} (${window.activeQualifica})`;
+            document.getElementById('lblAttestanteNome').innerText = window.activeOp;
+            document.getElementById('lblAttestanteQualifica').innerText = window.activeQualifica;
+            document.getElementById('txtDataAtto').value = window.getTodayString();
+
+            if(window.currentPatient) {
+                window.caricaFascicoloConsenso(window.currentPatient);
+            }
+        };
+    </script>
+</body>
+</html>
