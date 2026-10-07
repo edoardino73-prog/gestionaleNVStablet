@@ -52,14 +52,12 @@
            MATRICE RUOLI & VISIBILITÀ TABLET (RBAC)
            ========================================================================= */
 
-        /* 1. INFERMIERE, DIRETTORE SANITARIO & MEDICO: TUTTO TRANNE HACCP */
         body[data-qualifica="Infermiere"] .tile-haccp,
         body[data-qualifica="Direttore Sanitario"] .tile-haccp,
         body[data-qualifica="Medico"] .tile-haccp {
             display: none !important;
         }
 
-        /* 2. OSS: SOLO PARAMETRI, DIARIO OSS, CONSEGNE, RISCHIO, ANAGRAFICA, NOMINA */
         body[data-qualifica="OSS"] .tile-haccp,
         body[data-qualifica="OSS"] .tile-diari,
         body[data-qualifica="OSS"] .tile-terapia,
@@ -69,7 +67,6 @@
             display: none !important;
         }
 
-        /* 3. SERVIZI GENERALI: ESCLUSIVAMENTE HACCP E PROPRIA NOMINA PRIVACY */
         body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .stats-strip,
         body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tile-diari,
         body[data-qualifica="Servizi Generali (Cucina/Pulizie/Lavanderia)"] .tile-oss,
@@ -230,10 +227,6 @@
             min-height: 110px;
             border: 2px solid transparent;
         }
-        .tile-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 18px rgba(0,0,0,0.35);
-        }
         .tile-card:active {
             transform: scale(0.97);
         }
@@ -315,10 +308,6 @@
             background: #334155;
             transition: all 0.15s ease;
         }
-        .hub-footer a:hover {
-            color: #ffffff;
-            background: #475569;
-        }
 
         /* MODALE OPERATORE CON PIN & PALLINO STATO NOMINA */
         .login-overlay {
@@ -359,7 +348,18 @@
             font-weight: 700;
             position: relative;
         }
-        .op-pill:hover { border-color: var(--primary); background: #f0fdfa; }
+
+        /* TASTIERINO NUMERICO TOUCH PER TABLET */
+        .nav-btn-touch {
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: #ffffff;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .nav-btn-touch:active { transform: scale(0.95); }
 
         #toast-box {
             position: fixed; bottom: 20px; right: 20px;
@@ -382,15 +382,29 @@
 
             <div id="opSelectStep">
                 <div id="operatorsContainer" class="op-grid-tablet">Caricamento operatori...</div>
-                <button onclick="document.getElementById('modalOpOverlay').style.display='none'" style="margin-top:8px; padding:8px 16px; background:#64748b; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Annulla</button>
             </div>
 
             <div id="pinStep" style="display:none;">
                 <label id="selectedOpNameLabel" style="font-weight:bold; color:var(--primary); display:block; margin-bottom:8px;"></label>
-                <input type="password" id="pinInput" placeholder="****" maxlength="8" inputmode="numeric" style="width:100%; padding:12px; font-size:1.4em; text-align:center; letter-spacing:6px; border:2px solid var(--border-color); border-radius:6px; margin-bottom:12px;">
+                <input type="password" id="pinInput" placeholder="****" maxlength="8" inputmode="numeric" readonly style="width:100%; padding:12px; font-size:1.4em; text-align:center; letter-spacing:6px; border:2px solid var(--border-color); border-radius:6px; margin-bottom:12px; background:#f8fafc; font-weight:bold;">
+                
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:10px;">
+                    <button class="nav-btn-touch" style="color:#0f172a; background:#f1f5f9; padding:14px; font-size:1.3em; justify-content:center;" onclick="window.digitPin('1')">1</button>
+                    <button class="nav-btn-touch" style="color:#0f172a; background:#f1f5f9; padding:14px; font-size:1.3em; justify-content:center;" onclick="window.digitPin('2')">2</button>
+                    <button class="nav-btn-touch" style="color:#0f172a; background:#f1f5f9; padding:14px; font-size:1.3em; justify-content:center;" onclick="window.digitPin('3')">3</button>
+                    <button class="nav-btn-touch" style="color:#0f172a; background:#f1f5f9; padding:14px; font-size:1.3em; justify-content:center;" onclick="window.digitPin('4')">4</button>
+                    <button class="nav-btn-touch" style="color:#0f172a; background:#f1f5f9; padding:14px; font-size:1.3em; justify-content:center;" onclick="window.digitPin('5')">5</button>
+                    <button class="nav-btn-touch" style="color:#0f172a; background:#f1f5f9; padding:14px; font-size:1.3em; justify-content:center;" onclick="window.digitPin('6')">6</button>
+                    <button class="nav-btn-touch" style="color:#0f172a; background:#f1f5f9; padding:14px; font-size:1.3em; justify-content:center;" onclick="window.digitPin('7')">7</button>
+                    <button class="nav-btn-touch" style="color:#0f172a; background:#f1f5f9; padding:14px; font-size:1.3em; justify-content:center;" onclick="window.digitPin('8')">8</button>
+                    <button class="nav-btn-touch" style="color:#0f172a; background:#f1f5f9; padding:14px; font-size:1.3em; justify-content:center;" onclick="window.digitPin('9')">9</button>
+                    <button class="nav-btn-touch" style="color:#e11d48; background:#fee2e2; padding:14px; font-size:1.1em; justify-content:center;" onclick="window.clearPin()">⌫</button>
+                    <button class="nav-btn-touch" style="color:#0f172a; background:#f1f5f9; padding:14px; font-size:1.3em; justify-content:center;" onclick="window.digitPin('0')">0</button>
+                    <button class="nav-btn-touch" style="color:#059669; background:#dcfce7; padding:14px; font-size:1.1em; justify-content:center;" onclick="window.confermaLoginPin()">OK</button>
+                </div>
+
                 <div style="display:flex; gap:8px;">
                     <button onclick="window.tornaASelezioneOp()" style="flex:1; padding:10px; background:#64748b; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">← Indietro</button>
-                    <button onclick="window.confermaLoginPin()" style="flex:2; padding:10px; background:var(--primary); color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">Accedi</button>
                 </div>
             </div>
         </div>
@@ -433,96 +447,83 @@
 
         <div class="tiles-grid">
 
-            <!-- 1. DIARI INTEGRATI (MEDICO / INF) -->
-            <a href="tablet_diari.html" class="tile-card tile-diari">
+            <a href="javascript:void(0)" onclick="window.apriModuloNavigando('tablet_diari.html')" class="tile-card tile-diari">
                 <div class="tile-icon">📖</div>
                 <div class="tile-title" style="color:var(--c-diari);">Diari Reparto</div>
                 <div class="tile-desc">Cronologia Medico & Infermiere</div>
             </a>
 
-            <!-- 2. DIARIO ASSISTENZIALE OSS DEDICATO -->
-            <a href="tablet_diario_oss.html" class="tile-card tile-oss">
+            <a href="javascript:void(0)" onclick="window.apriModuloNavigando('tablet_diario_oss.html')" class="tile-card tile-oss">
                 <div class="tile-icon">🧻</div>
                 <div class="tile-title" style="color:var(--c-oss);">Diario OSS</div>
                 <div class="tile-desc">Alvo, Diuresi, Igiene & Idratazione</div>
             </a>
 
-            <!-- 3. PARAMETRI VITALI & DOLORE CON GRAFICO -->
-            <a href="tablet_parametri_vitali.html" class="tile-card tile-vitali">
+            <a href="javascript:void(0)" onclick="window.apriModuloNavigando('tablet_parametri_vitali.html')" class="tile-card tile-vitali">
                 <div class="tile-icon">❤️</div>
                 <div class="tile-title" style="color:var(--c-vitali);">Parametri Vitali</div>
                 <div class="tile-desc">PA, FC, SpO2, TC, Glicemia & Trend</div>
             </a>
 
-            <!-- 4. TERAPIE & STUPEFACENTI DPR 309 CON ALERT PULSANTE DOSI IN SOSPESO -->
-            <a href="tablet_terapia.html" class="tile-card tile-terapia">
+            <a href="javascript:void(0)" onclick="window.apriModuloNavigando('tablet_terapia.html')" class="tile-card tile-terapia">
                 <div class="tile-badge pulse" id="badgeTileTerapia" style="display:none; background:#e11d48;">0 DA DARE</div>
                 <div class="tile-icon">💊</div>
                 <div class="tile-title" style="color:var(--c-terapia);">Terapia & 309/90</div>
                 <div class="tile-desc">Somministrazioni & Carico/Scarico</div>
             </a>
 
-            <!-- 5. FASCICOLO CLINICO TABLET COMPLETO -->
-            <a href="tablet_cartella_clinica.html" class="tile-card tile-cartella">
+            <a href="javascript:void(0)" onclick="window.apriModuloNavigando('tablet_cartella_clinica.html')" class="tile-card tile-cartella">
                 <div class="tile-icon">⚕️</div>
                 <div class="tile-title" style="color:var(--c-cartella);">Cartella Clinica</div>
                 <div class="tile-desc">BINA, Scale VMD, PAI & Mappa Lesioni</div>
             </a>
 
-            <!-- 6. PIANI PRESIDI & ASSORBENZA ASL -->
-            <a href="presidi.html" class="tile-card tile-presidi">
+            <a href="javascript:void(0)" onclick="window.apriModuloNavigando('presidi.html')" class="tile-card tile-presidi">
                 <div class="tile-badge" id="badgeTilePresidi" style="display:none;">0</div>
                 <div class="tile-icon">📦</div>
                 <div class="tile-title" style="color:var(--c-presidi);">Piani Presidi ASL</div>
                 <div class="tile-desc">Pannoloni, Cateteri & Scadenze Forniture</div>
             </a>
 
-            <!-- 7. RISCHIO CLINICO & CONTENZIONI -->
-            <a href="tablet_rischio_contenzioni.html" class="tile-card tile-rischio">
+            <a href="javascript:void(0)" onclick="window.apriModuloNavigando('tablet_rischio_contenzioni.html')" class="tile-card tile-rischio">
                 <div class="tile-badge" id="badgeTileContenzioni" style="display:none;">0</div>
                 <div class="tile-icon">⚠️</div>
                 <div class="tile-title" style="color:var(--c-rischio);">Rischio & Contenzioni</div>
                 <div class="tile-desc">Prescrizioni, Revoche & Incident Report</div>
             </a>
 
-            <!-- 8. PASSAGGIO CONSEGNE TURNO -->
-            <a href="tablet_consegne.html" class="tile-card tile-consegne">
+            <a href="javascript:void(0)" onclick="window.apriModuloNavigando('tablet_consegne.html')" class="tile-card tile-consegne">
                 <div class="tile-icon">📢</div>
                 <div class="tile-title" style="color:var(--c-consegne);">Consegne Turno</div>
                 <div class="tile-desc">Docce, Igiene, Movimento & Consegne</div>
             </a>
 
-            <!-- 9. PRENOTAZIONI CUP & TRASPORTI SANITARI -->
-            <a href="tablet_cup.html" class="tile-card tile-cup">
+            <a href="javascript:void(0)" onclick="window.apriModuloNavigando('tablet_cup.html')" class="tile-card tile-cup">
                 <div class="tile-badge" id="badgeTileCup" style="display:none; background:#0284c7;">0</div>
                 <div class="tile-icon">📅</div>
                 <div class="tile-title" style="color:var(--c-cup);">CUP & Trasporti</div>
                 <div class="tile-desc">Agenda Visite & Schede Viaggio</div>
             </a>
 
-            <!-- 10. ELENCO OSPITI, ANAGRAFICA & BARCODE TS -->
-            <a href="tablet_anagrafica_ocr.html" class="tile-card tile-anagrafica">
+            <a href="javascript:void(0)" onclick="window.apriModuloNavigando('tablet_anagrafica_ocr.html')" class="tile-card tile-anagrafica">
                 <div class="tile-icon">👥</div>
                 <div class="tile-title" style="color:var(--c-anagrafica);">Anagrafica & TS</div>
                 <div class="tile-desc">Quadro Presenze con Età & Barcode TS</div>
             </a>
 
-            <!-- 11. CONSENSO INFORMATO & PRIVACY OSPITI (L. 219/2017 & GDPR) -->
-            <a href="tablet_privacy_consenso.html" class="tile-card tile-privacy">
+            <a href="javascript:void(0)" onclick="window.apriModuloNavigando('tablet_privacy_consenso.html')" class="tile-card tile-privacy">
                 <div class="tile-icon">✍️</div>
                 <div class="tile-title" style="color:var(--c-privacy);">Consenso & Privacy</div>
                 <div class="tile-desc">Firma Touch Paziente/AdS & Fiduciari</div>
             </a>
 
-            <!-- 12. ATTO DI NOMINA PERSONALE IN APPALTO (RELOAD S.P.A. - ART. 29 GDPR) -->
-            <a href="personale_privacy_reload.html" class="tile-card tile-reload">
+            <a href="javascript:void(0)" onclick="window.apriModuloNavigando('personale_privacy_reload.html')" class="tile-card tile-reload">
                 <div class="tile-icon">⚖️</div>
                 <div class="tile-title" style="color:var(--c-reload);">Nomina Reload S.p.A.</div>
                 <div class="tile-desc">Atto Incarico Staff Appalto (Art. 29)</div>
             </a>
 
-            <!-- 13. HACCP & AUTOCONTROLLO TABLET -->
-            <a href="tablet_haccp.html" class="tile-card tile-haccp">
+            <a href="javascript:void(0)" onclick="window.apriModuloNavigando('tablet_haccp.html')" class="tile-card tile-haccp">
                 <div class="tile-icon">🍳</div>
                 <div class="tile-title" style="color:var(--c-haccp);">HACCP Tablet</div>
                 <div class="tile-desc">Cottura, Abbattitore Mod. 06 & Temperature</div>
@@ -537,7 +538,7 @@
             <span>Senior Care S.r.l. • P.IVA 03982400545 • Nuova Villa Silvana</span>
         </div>
         <div style="display:flex; gap:10px;">
-            <a href="index_2.html" style="background:#0f766e; color:#fff;">🖥️ Desktop Reparto</a>
+            <a href="javascript:void(0)" onclick="window.apriModuloNavigando('index_2.html')" style="background:#0f766e; color:#fff;">🖥️ Desktop Reparto</a>
         </div>
     </div>
 
@@ -564,9 +565,9 @@
         window.dbPresidi = [];
         window.dbCup = [];
 
-        window.activeOp = sessionStorage.getItem("activeOperator") || localStorage.getItem("activeOperator") || "";
-        window.activeRole = sessionStorage.getItem("activeRole") || localStorage.getItem("activeRole") || "user";
-        window.activeQualifica = sessionStorage.getItem("activeQualifica") || localStorage.getItem("activeQualifica") || "OSS";
+        window.activeOp = sessionStorage.getItem("activeOperator") || "";
+        window.activeRole = sessionStorage.getItem("activeRole") || "user";
+        window.activeQualifica = sessionStorage.getItem("activeQualifica") || "OSS";
         window.selectedOpTemp = null;
 
         window.showToast = (msg) => {
@@ -581,6 +582,48 @@
             return `${n.toLocaleDateString('it-IT')} alle ${n.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
         };
 
+        // =========================================================================
+        // SICUREZZA: GESTIONE CHIUSURA FINESTRA ("X") E TIMEOUT INATTIVITÀ
+        // =========================================================================
+        const TIMEOUT_INATTIVITA_MS = 5 * 60 * 1000; // 5 Minuti
+        let timerInattivita = null;
+
+        window.resetTimerInattivita = () => {
+            clearTimeout(timerInattivita);
+            if (window.activeOp) {
+                sessionStorage.setItem("lastActivityTimestamp", Date.now().toString());
+                timerInattivita = setTimeout(() => {
+                    window.showToast("⚠️ Sessione terminata per inattività (5 min).");
+                    setTimeout(() => window.logoutTablet(), 800);
+                }, TIMEOUT_INATTIVITA_MS);
+            }
+        };
+
+        ['click', 'touchstart', 'mousemove', 'keydown', 'scroll'].forEach(evt => {
+            window.addEventListener(evt, window.resetTimerInattivita, { passive: true });
+        });
+
+        // Evento di salvataggio flag prima del refresh controllato o click su link
+        window.addEventListener('beforeunload', () => {
+            sessionStorage.setItem("is_reloading_session", "1");
+        });
+
+        // Evento se chiude brutalmente il tab/browser
+        window.addEventListener('pagehide', () => {
+            if (!sessionStorage.getItem("is_reloading_session") && !sessionStorage.getItem("is_navigating_submodule")) {
+                sessionStorage.clear();
+            }
+        });
+
+        window.apriModuloNavigando = (url) => {
+            if(!window.activeOp) return window.showToast("⚠️ Devi selezionare l'operatore!");
+            sessionStorage.setItem("activeOperator", window.activeOp);
+            sessionStorage.setItem("activeRole", window.activeRole);
+            sessionStorage.setItem("activeQualifica", window.activeQualifica);
+            sessionStorage.setItem("is_navigating_submodule", "1");
+            window.location.href = url;
+        };
+
         // GESTIONE OPERATORE & APPLICAZIONE DEI RUOLI
         window.aggiornaUIOperatore = () => {
             if(!window.activeOp) {
@@ -588,6 +631,7 @@
                 window.apriModalOperatore();
             } else {
                 document.getElementById('badgeActiveOp').innerText = `👤 ${window.activeOp} (${window.activeQualifica})`;
+                window.resetTimerInattivita();
             }
 
             document.body.setAttribute('data-qualifica', window.activeQualifica);
@@ -628,7 +672,6 @@
             document.getElementById('selectedOpNameLabel').innerText = `PIN per ${op.name}:`;
             const inp = document.getElementById('pinInput');
             inp.value = '';
-            setTimeout(() => inp.focus(), 150);
         };
 
         window.tornaASelezioneOp = () => {
@@ -637,7 +680,17 @@
             document.getElementById('opSelectStep').style.display = 'block';
         };
 
-        // LOGIN TABLET CON GATEWAY NOMINA RELOAD S.P.A. & AUDIT TRAIL FORENSE
+        window.digitPin = (num) => {
+            const inp = document.getElementById('pinInput');
+            if (inp.value.length < 8) inp.value += num;
+        };
+
+        window.clearPin = () => {
+            const inp = document.getElementById('pinInput');
+            inp.value = inp.value.slice(0, -1);
+        };
+
+        // LOGIN CON GATEWAY NOMINA RELOAD S.P.A. & AUDIT TRAIL FORENSE
         window.confermaLoginPin = async () => {
             const pin = document.getElementById('pinInput').value.trim();
             const op = window.selectedOpTemp;
@@ -645,7 +698,7 @@
 
             if(op.pin === pin || (op.name === 'Admin' && pin === '12345')) {
                 
-                // 🛑 GATEWAY DI PRIMO ACCESSO TABLET: BLOCCO SE MANCA LA NOMINA RELOAD S.P.A.
+                // 🛑 GATEWAY DI PRIMO ACCESSO: BLOCCO SE MANCA LA NOMINA RELOAD S.P.A.
                 const isNominaValida = !!(op.privacyFirmata || (op.nominaReload && op.nominaReload.stato === "SOTTOSCRITTO") || op.name === "Admin");
                 if(!isNominaValida) {
                     try {
@@ -655,20 +708,20 @@
                             operatore: op.name,
                             qualifica: op.qualifica || "Operatore",
                             categoria: "REVOCA",
-                            azione: "Blocco Gateway Nomina Tablet",
+                            azione: "Blocco Gateway Nomina",
                             ospite: "Tablet Reparto Hub",
-                            dettaglio: `Accesso sospeso: Operatore in appalto ${op.name} privo di Atto di Nomina sottoscritto ex Art. 29 GDPR (Reload S.p.A.). Reindirizzamento al portale firme.`
+                            dettaglio: `Accesso sospeso: Operatore in appalto ${op.name} privo di Atto di Nomina sottoscritto ex Art. 29 GDPR (Reload S.p.A.).`
                         });
                     } catch(e){}
 
                     window.showToast("⚠️ Primo Accesso: È richiesta la firma della Nomina Reload S.p.A.!");
                     setTimeout(() => {
-                        window.location.href = `personale_privacy_reload.html?op=${op.id}&gateway=1`;
+                        window.apriModuloNavigando(`personale_privacy_reload.html?op=${op.id}&gateway=1`);
                     }, 1200);
                     return;
                 }
 
-                // ACCESSO CONSENTITO
+                // ACCESSO CONSENTITO E BLINDATURA SESSIONE
                 window.activeOp = op.name;
                 window.activeRole = op.role || 'user';
                 window.activeQualifica = op.qualifica || 'OSS';
@@ -676,10 +729,9 @@
                 sessionStorage.setItem("activeOperator", op.name);
                 sessionStorage.setItem("activeRole", window.activeRole);
                 sessionStorage.setItem("activeQualifica", window.activeQualifica);
-                localStorage.setItem("activeOperator", op.name);
-                localStorage.setItem("activeQualifica", window.activeQualifica);
+                sessionStorage.setItem("lastActivityTimestamp", Date.now().toString());
 
-                // REGISTRAZIONE FORENSE DEL LOGIN TABLET SU FIRESTORE
+                // REGISTRAZIONE FORENSE DEL LOGIN SU FIRESTORE
                 try {
                     await addDoc(collection(db, "audit_trail"), {
                         timestamp: Date.now(),
@@ -687,20 +739,17 @@
                         operatore: op.name,
                         qualifica: op.qualifica || "Operatore",
                         categoria: "LOGIN",
-                        azione: "Accesso Tablet Riuscito",
+                        azione: "Accesso Launcher Riuscito",
                         ospite: "Tablet Reparto Hub",
-                        dettaglio: `Autenticazione PIN effettuata con successo su tablet [Operatore autorizzato Reload S.p.A. - Qualifica: ${op.qualifica || 'N/D'}]`
+                        dettaglio: `Autenticazione PIN effettuata con successo [Operatore autorizzato Reload S.p.A. - Qualifica: ${op.qualifica || 'N/D'}]`
                     });
-                } catch(err){
-                    console.warn("Impossibile registrare log di login su tablet:", err);
-                }
+                } catch(err){}
 
                 document.getElementById('modalOpOverlay').style.display = 'none';
                 window.aggiornaUIOperatore();
                 window.showToast(`Benvenuto ${op.name}`);
 
             } else {
-                // REGISTRAZIONE TENTATIVO DI LOGIN FALLITO (PIN ERRATO SU TABLET)
                 try {
                     await addDoc(collection(db, "audit_trail"), {
                         timestamp: Date.now(),
@@ -708,15 +757,35 @@
                         operatore: op.name || "Sconosciuto",
                         qualifica: op.qualifica || "N/D",
                         categoria: "REVOCA",
-                        azione: "Tentativo Login Tablet Fallito",
+                        azione: "Tentativo Login Fallito",
                         ospite: "Sicurezza Tablet",
-                        dettaglio: `Tentativo di accesso con PIN errato su tablet per il profilo: ${op.name}`
+                        dettaglio: `Tentativo di accesso con PIN errato per il profilo: ${op.name}`
                     });
                 } catch(e){}
 
                 window.showToast("❌ PIN errato!");
                 document.getElementById('pinInput').value = '';
             }
+        };
+
+        window.logoutTablet = async () => {
+            clearTimeout(timerInattivita);
+            if (window.activeOp) {
+                try {
+                    await addDoc(collection(db, "audit_trail"), {
+                        timestamp: Date.now(),
+                        dataOraStr: window.getTimestamp(),
+                        operatore: window.activeOp,
+                        qualifica: window.activeQualifica,
+                        categoria: "LOGIN",
+                        azione: "Logout Tablet",
+                        ospite: "Terminale Tablet Hub",
+                        dettaglio: "Disconnessione volontaria dalla postazione hub"
+                    });
+                } catch(e){}
+            }
+            sessionStorage.clear();
+            window.location.reload();
         };
 
         // CALCOLO INDICATORI & ALLARMI LIVE
@@ -795,15 +864,6 @@
             else { bTileCup.style.display = 'none'; }
         };
 
-        // PROPAGAZIONE CONTESTO SESSIONE AL CLICK DELLE TESSERE
-        document.querySelectorAll('.tile-card').forEach(card => {
-            card.addEventListener('click', () => {
-                sessionStorage.setItem("activeOperator", window.activeOp);
-                sessionStorage.setItem("activeRole", window.activeRole);
-                sessionStorage.setItem("activeQualifica", window.activeQualifica);
-            });
-        });
-
         // REAL-TIME FIRESTORE LISTENERS
         onSnapshot(collection(db, "operatori"), snap => {
             window.dbOperatori = snap.docs.map(d=>({id:d.id, ...d.data()}));
@@ -837,7 +897,28 @@
         });
 
         window.onload = () => {
-            window.aggiornaUIOperatore();
+            const wasReloading = sessionStorage.getItem("is_reloading_session");
+            const wasNavigatingSub = sessionStorage.getItem("is_navigating_submodule");
+            sessionStorage.removeItem("is_reloading_session");
+            sessionStorage.removeItem("is_navigating_submodule");
+
+            const lastActive = sessionStorage.getItem("lastActivityTimestamp");
+            const now = Date.now();
+            const sessionExpired = lastActive ? ((now - parseInt(lastActive, 10)) > TIMEOUT_INATTIVITA_MS) : true;
+
+            let savedOp = sessionStorage.getItem("activeOperator");
+
+            // SE SESSIONE SCADUTA, O NON È UN REFRESH CONTROLLATO, FORZA LOGIN
+            if (!savedOp || sessionExpired || (!wasReloading && !wasNavigatingSub)) {
+                sessionStorage.clear();
+                window.activeOp = "";
+                window.aggiornaUIOperatore();
+            } else {
+                window.activeOp = savedOp;
+                window.activeRole = sessionStorage.getItem("activeRole") || "user";
+                window.activeQualifica = sessionStorage.getItem("activeQualifica") || "";
+                window.aggiornaUIOperatore();
+            }
         };
     </script>
 </body>
